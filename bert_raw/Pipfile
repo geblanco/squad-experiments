@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+keras = "*"
+numpy = "*"
+tensorflow = "*"
+matplotlib = "*"
+ipython = "*"
+bert-serving-server = "*"
+bert-serving-client = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
