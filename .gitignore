@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# SQuAD data
+squad
+squad_output
+models
+data
