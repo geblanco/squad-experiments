@@ -108,3 +108,5 @@ squad
 squad_output
 models
 data
+logs
+bert
