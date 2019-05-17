@@ -4,7 +4,7 @@
 # Mandatory SRVR_ADDR, SRVR_DEST_DIR
 # Mandatory BATCH_SIZE, SEQ_LENGTH
 # Optional EXP_NAME, GPUS_NO, GPUS_MODEL
-[ -f ~/experiment ] && source  ~/experiment
+[ -f experiment ] && source  experiment
 [[ -z SRVR_ADDR || -z SRVR_DEST_DIR ]] && (echo 'No backup space'; exit 1)
 [[ -z BATCH_SIZE || -z SEQ_LENGTH ]] && (echo 'Need experiment variables'; exit 2)
 
@@ -13,7 +13,7 @@ SQUAD_DIR=`pwd`/squad
 OUTPUT_DIR=`pwd`/squad_output
 
 cd bert
-time python run_squad.py \
+python run_squad.py \
   --vocab_file=$BERT_DIR/vocab.txt \
   --bert_config_file=$BERT_DIR/bert_config.json \
   --init_checkpoint=$BERT_DIR/bert_model.ckpt \
@@ -29,10 +29,6 @@ time python run_squad.py \
   --output_dir=$OUTPUT_DIR \
   --use_tpu=False \
   --version_2_with_negative=True \
-| tee $OUTPUT_DIR/train_log
-
-# --null_score_diff_threshold=$THRESH, where $THRESH is the output with do_train=True
 cd -
 
-# backup data
-rsync -avrzP $OUTPUT_DIR $SRVR_ADDR:$SRVR_DEST_DIR
+
