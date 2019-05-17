@@ -1,0 +1,79 @@
+diff --git a/run_squad.py b/run_squad.py
+index edd4c3e..cab9a7f 100644
+--- a/run_squad.py
++++ b/run_squad.py
+@@ -427,31 +427,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
+         start_position = 0
+         end_position = 0
+ 
+-      if example_index < 20:
+-        tf.logging.info("*** Example ***")
+-        tf.logging.info("unique_id: %s" % (unique_id))
+-        tf.logging.info("example_index: %s" % (example_index))
+-        tf.logging.info("doc_span_index: %s" % (doc_span_index))
+-        tf.logging.info("tokens: %s" % " ".join(
+-            [tokenization.printable_text(x) for x in tokens]))
+-        tf.logging.info("token_to_orig_map: %s" % " ".join(
+-            ["%d:%d" % (x, y) for (x, y) in six.iteritems(token_to_orig_map)]))
+-        tf.logging.info("token_is_max_context: %s" % " ".join([
+-            "%d:%s" % (x, y) for (x, y) in six.iteritems(token_is_max_context)
+-        ]))
+-        tf.logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
+-        tf.logging.info(
+-            "input_mask: %s" % " ".join([str(x) for x in input_mask]))
+-        tf.logging.info(
+-            "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
+-        if is_training and example.is_impossible:
+-          tf.logging.info("impossible example")
+-        if is_training and not example.is_impossible:
+-          answer_text = " ".join(tokens[start_position:(end_position + 1)])
+-          tf.logging.info("start_position: %d" % (start_position))
+-          tf.logging.info("end_position: %d" % (end_position))
+-          tf.logging.info(
+-              "answer: %s" % (tokenization.printable_text(answer_text)))
++      # if example_index < 20:
++      #   tf.logging.info("*** Example ***")
++      #   tf.logging.info("unique_id: %s" % (unique_id))
++      #   tf.logging.info("example_index: %s" % (example_index))
++      #   tf.logging.info("doc_span_index: %s" % (doc_span_index))
++      #   tf.logging.info("tokens: %s" % " ".join(
++      #       [tokenization.printable_text(x) for x in tokens]))
++      #   tf.logging.info("token_to_orig_map: %s" % " ".join(
++      #       ["%d:%d" % (x, y) for (x, y) in six.iteritems(token_to_orig_map)]))
++      #   tf.logging.info("token_is_max_context: %s" % " ".join([
++      #       "%d:%s" % (x, y) for (x, y) in six.iteritems(token_is_max_context)
++      #   ]))
++      #   tf.logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
++      #   tf.logging.info(
++      #       "input_mask: %s" % " ".join([str(x) for x in input_mask]))
++      #   tf.logging.info(
++      #       "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
++      #   if is_training and example.is_impossible:
++      #     tf.logging.info("impossible example")
++      #   if is_training and not example.is_impossible:
++      #     answer_text = " ".join(tokens[start_position:(end_position + 1)])
++      #     tf.logging.info("start_position: %d" % (start_position))
++      #     tf.logging.info("end_position: %d" % (end_position))
++      #     tf.logging.info(
++      #         "answer: %s" % (tokenization.printable_text(answer_text)))
+ 
+       feature = InputFeatures(
+           unique_id=unique_id,
+@@ -903,9 +903,14 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+       all_predictions[example.qas_id] = nbest_json[0]["text"]
+     else:
+       # predict "" iff the null score - the score of best non-null > threshold
+-      score_diff = score_null - best_non_null_entry.start_logit - (
+-          best_non_null_entry.end_logit)
+-      scores_diff_json[example.qas_id] = score_diff
++      if best_non_null_entry:
++        score_diff = score_null - best_non_null_entry.start_logit - (
++            best_non_null_entry.end_logit)
++        scores_diff_json[example.qas_id] = score_diff
++      else:
++        # all n best entries are null, we assign a higher diff than threshold
++        score_diff = FLAGS.null_score_diff_threshold + 1.0
++
+       if score_diff > FLAGS.null_score_diff_threshold:
+         all_predictions[example.qas_id] = ""
+       else:
