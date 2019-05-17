@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BERT_LARGE_DIR=`pwd`/models/uncased_L-12_H-768_A-12
+BERT_LARGE_DIR=`pwd`/models/uncased
 SQUAD_DIR=`pwd`/squad
 OUTPUT_DIR=`pwd`/squad_output
 
