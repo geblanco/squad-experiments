@@ -21,7 +21,7 @@ model='uncased_L-12_H-768_A-12.zip'
 # download bert models, light, uncased english model
 wget -q https://storage.googleapis.com/bert_models/2018_10_18/$model
 unzip $model
-mv $model uncased
+mv "${model%.*}" uncased
 cd -
 
 # bert output
