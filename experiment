@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## Experiment file
+# Fields       Mandatory (Y/n)     Default ()
+#
+# EXP_NAME          N
+# GPUS_NO           N                 1
+# GPUS_MODEL        N
+#
+# DOCKERIZE         N                 Y
+# 
+# SRVR_ADDR         Y (If BACKUP)
+# SRVR_DEST_DIR     Y (If BACKUP)
+# BACKUP            N                 N
+# 
+# BATCH_SIZE        N                 12
+# SEQ_LENGTH        N                 384
+# 
+# BERT_DIR          N               `pwd`/models/uncased
+# SQUAD_DIR         N               `pwd`/squad
+# OUTPUT_DIR        N               `pwd`/squad_output
+#
+# TRAIN_FILE        N               $SQUAD_DIR/train-v2.0.json
+# PREDICT_FILE      N               $SQUAD_DIR/dev-v2.0.json
+# 
+# CHECKPOINT        N               $BERT_DIR/bert_model.ckpt
+# TRAIN             N                  Y
+# THRESH            N                  0 
