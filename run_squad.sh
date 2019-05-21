@@ -20,6 +20,8 @@ THRESH=${THRESH:-'0'}
 TRAIN_FILE=${TRAIN_FILE:-$SQUAD_DIR/train-v2.0.json}
 PREDICT_FILE=${PREDICT_FILE:-$SQUAD_DIR/dev-v2.0.json}
 
+TRAIN_EPOCHS=${TRAIN_EPOCHS:-2.0}
+
 cd bert
 python run_squad.py \
   --vocab_file=$BERT_DIR/vocab.txt \
@@ -31,7 +33,7 @@ python run_squad.py \
   --predict_file=$PREDICT_FILE \
   --train_batch_size=$BATCH_SIZE \
   --learning_rate=3e-5 \
-  --num_train_epochs=2.0 \
+  --num_train_epochs=$TRAIN_EPOCHS \
   --max_seq_length=$SEQ_LENGTH \
   --doc_stride=128 \
   --output_dir=$OUTPUT_DIR \

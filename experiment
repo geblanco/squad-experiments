@@ -15,6 +15,7 @@
 # 
 # BATCH_SIZE        N                 12
 # SEQ_LENGTH        N                 384
+# TRAIN_EPOCHS      N                 2
 # 
 # BERT_DIR          N               `pwd`/models/uncased
 # SQUAD_DIR         N               `pwd`/squad
