@@ -1,7 +1,7 @@
 #!/bin/bash
 
 EXP_NAME='TriviaQA-Trained'
-META='TriviaQA Accuracy without extra training, just SQuAD trained model'
+META='TriviaQA Accuracy trained over wikipedia-train'
 
 DOCKERIZE=0
 BACKUP=0
