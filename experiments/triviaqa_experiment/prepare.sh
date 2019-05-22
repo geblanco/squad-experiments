@@ -30,20 +30,21 @@ done
 # create data dir if necessary
 exists $BASEDIR || mkdir $BASEDIR
 
-# get conversion script
-exists $REPO_DIR || git clone --branch=convert-to-squad-2 https://github.com/Chubasik/triviaqa.git
-
 # create destiny dataset dir if necessary 
 exists $DST_DATASET || mkdir $DST_DATASET
 
 cd $BASEDIR
+
+# get conversion script
+exists $REPO_DIR || git clone --branch=convert-to-squad-2 https://github.com/Chubasik/triviaqa.git
 
 # donwload dataset
 if [[ ! -d $SRC_DATASET ]]; then
   echo "Downloading dataset..."
   wget -q http://nlp.cs.washington.edu/triviaqa/data/triviaqa-rc.tar.gz
   echo "Uncompressing dataset..."
-  tar xfz triviaqa-rc.tar.gz
+  exists || mkdir $SRC_DATASET
+  tar xfz triviaqa-rc.tar.gz -C $SRC_DATASET
   echo "done"
 fi
 
