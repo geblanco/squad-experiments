@@ -50,7 +50,7 @@ fi
 
 cd $REPO_DIR
 
-pipenv install --python 3.6 --skip-lock -r requirements.txt
+pipenv install --python 3 --skip-lock -r requirements.txt
 
 pipenv run python3 convert_to_squad2_format.py --wikipedia_dir $SRC_DATASET/evidence/wikipedia --web_dir $SRC_DATASET/evidence/web --triviaqa_file $SRC_DATASET/qa/wikipedia-dev.json    --squad_file $DST_DATASET/wikipedia-dev.json
 pipenv run python3 convert_to_squad2_format.py --wikipedia_dir $SRC_DATASET/evidence/wikipedia --web_dir $SRC_DATASET/evidence/web --triviaqa_file $SRC_DATASET/qa/web-dev.json          --squad_file $DST_DATASET/web-dev.json
