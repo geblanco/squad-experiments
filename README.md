@@ -1,13 +1,14 @@
-# squad-experiments
+# SQuAD-experiments
 Repository to replicate [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/) experiments and results
 
 # Setup
-`prepare.sh` script setups bert with it's model and squad. It requires git, wget, unzip and pip commands. Python packages are setup through pipenv (which is also installed).
+`prepare.sh` script setups bert with it's model and SQuAD. It requires `git`, `wget`, `unzip` and `pip` commands. Python packages are setup through pipenv (which is also installed).
+
+Experiments are setup through \*.experiment files (see example.experiment for further information), they state the location of the necessary resources and some model settings.
 
 # Run
-Once prepared, enter the virtual env and start training.
+To run an experiment, copy the experiment file to the root of this project (in the future could be done automatically) and run the experimentation script inside the virtualenv:
 
 ```bash
-$(python -m site --user-base)/bin/pipenv shell
-./run.sh
+$(python -m site --user-base)/bin/pipenv run ./run.sh
 ```

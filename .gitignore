@@ -111,3 +111,7 @@ data
 logs
 bert
 results
+
+# experiments data
+experiments/**/data
+# should results, models, etc be included here?
