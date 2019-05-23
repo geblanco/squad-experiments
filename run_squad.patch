@@ -1,7 +1,16 @@
 diff --git a/run_squad.py b/run_squad.py
-index edd4c3e..cab9a7f 100644
+index edd4c3e..239ae14 100644
 --- a/run_squad.py
 +++ b/run_squad.py
+@@ -284,7 +284,7 @@ def read_squad_examples(input_file, is_training):
+                 doc_tokens[start_position:(end_position + 1)])
+             cleaned_answer_text = " ".join(
+                 tokenization.whitespace_tokenize(orig_answer_text))
+-            if actual_text.find(cleaned_answer_text) == -1:
++            if actual_text.find(cleaned_answer_text) == -1 and actual_text.lower().find(cleaned_answer_text) == -1:
+               tf.logging.warning("Could not find answer: '%s' vs. '%s'",
+                                  actual_text, cleaned_answer_text)
+               continue
 @@ -427,31 +427,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
          start_position = 0
          end_position = 0
