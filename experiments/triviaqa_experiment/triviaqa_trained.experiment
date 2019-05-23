@@ -13,9 +13,10 @@ SEQ_LENGTH=384
 BERT_DIR=`pwd`/models/uncased
 MODEL_DIR=`pwd`/squad_output
 _BASE_DIR=`pwd`/experiments/triviaqa_experiment
+_DATA_DIR=$_BASE_DIR/data
 
-_QA_DIR=$_BASE_DIR/triviaqa_squad
-OUTPUT_DIR=$_BASE_DIR/triviaqa_output
+_QA_DIR=$_DATA_DIR/triviaqa_squad
+OUTPUT_DIR=$_BASE_DIR/triviaqa_trained_out
 
 TRAIN_FILE=$_QA_DIR/wikipedia-train.json
 PREDICT_FILE=$_QA_DIR/wikipedia-dev.json
