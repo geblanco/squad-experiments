@@ -5,9 +5,7 @@ set -e
 
 # download bert repo
 git clone https://github.com/google-research/bert.git
-cd bert
-patch -p1 < ../run_squad.patch
-cd -
+patch -p1 bert/run_squad.py run_squad.patch
 
 mkdir squad
 # download squad files
@@ -31,5 +29,12 @@ mkdir squad_output
 pip install --user pipenv
 export PATH=$(python -m site --user-base)/bin:$PATH
 
-pipenv install --skip-lock --python 3.6 -r bert/requirements.txt
+pipenv install --skip-lock --python 3 -r bert/requirements.txt
 
+# install dataset converter (converts various formats to SQuAD)
+git clone https://github.com/m0n0l0c0/qa_datasets_converter converter
+cd converter
+
+pipenv install --skip-lock --python 3 -r requirements.txt
+
+cd -

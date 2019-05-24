@@ -1,10 +1,11 @@
 #!/bin/bash
 
-EXP_NAME='TriviaQA-Untrained'
-META='TriviaQA Accuracy without extra training, just SQuAD trained model'
+EXP_NAME='News QA-Trained'
+META='News QA Accuracy trained over newsqa'
 
 DOCKERIZE=0
 BACKUP=0
+TRAIN_EPOCHS=1
 
 BATCH_SIZE=16
 SEQ_LENGTH=256
@@ -15,11 +16,11 @@ _BASE_DIR=`pwd`/experiments/triviaqa_experiment
 _DATA_DIR=$_BASE_DIR/data
 
 _QA_DIR=$_DATA_DIR/triviaqa_squad
-OUTPUT_DIR=$_BASE_DIR/triviaqa_untrained_out
+OUTPUT_DIR=$_BASE_DIR/triviaqa_trained_out
 
 TRAIN_FILE=$_QA_DIR/wikipedia-train.json
 PREDICT_FILE=$_QA_DIR/wikipedia-dev.json
 
 CHECKPOINT=$MODEL_DIR/model.ckpt-16289
-TRAIN=False
+TRAIN=True
 THRESH='-2.1419568061828613'

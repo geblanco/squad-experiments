@@ -12,3 +12,6 @@ To run an experiment, copy the experiment file to the root of this project (in t
 ```bash
 $(python -m site --user-base)/bin/pipenv run ./run.sh
 ```
+
+# Notes
+Some datasets may require some manual setup in order to work. For example [News QA](https://github.com/Maluuba/newsqa) requires manual download (due to license issues) and docker for compilation.
