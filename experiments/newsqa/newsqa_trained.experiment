@@ -12,14 +12,14 @@ SEQ_LENGTH=256
 
 BERT_DIR=`pwd`/models/uncased
 MODEL_DIR=`pwd`/squad_output
-_BASE_DIR=`pwd`/experiments/triviaqa_experiment
+_BASE_DIR=`pwd`/experiments/newsqa
 _DATA_DIR=$_BASE_DIR/data
 
-_QA_DIR=$_DATA_DIR/triviaqa_squad
-OUTPUT_DIR=$_BASE_DIR/triviaqa_trained_out
+_QA_DIR=$_DATA_DIR/newsqa_squad
+OUTPUT_DIR=$_BASE_DIR/newsqa_trained_out
 
-TRAIN_FILE=$_QA_DIR/wikipedia-train.json
-PREDICT_FILE=$_QA_DIR/wikipedia-dev.json
+TRAIN_FILE=$_QA_DIR/train.json
+PREDICT_FILE=$_QA_DIR/dev.json
 
 CHECKPOINT=$MODEL_DIR/model.ckpt-16289
 TRAIN=True
