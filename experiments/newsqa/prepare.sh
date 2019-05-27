@@ -2,7 +2,6 @@
 
 cwd=`pwd`
 DATASET_CONVERTER_PATH=$(realpath ../..)/converter
-DATASET_CONVERTER_PATH=/home/gb/Documents/Research/datasets/converter
 
 BASEDIR=`pwd`/data
 SRC_DATASET="${BASEDIR}/newsqa/maluuba/newsqa"
@@ -52,23 +51,27 @@ set -e
 
 cd $REPO_DIR
 
-# Build newsqa dataset (Taken from README)
-echo "Building docker image..."
-# sudo docker build -t maluuba/newsqa .
-echo "Compiling dataset..."
-# sudo docker run --rm -it -v ${PWD}:/usr/src/newsqa --name newsqa maluuba/newsqa
+if [[ ! -f $REPO_DIR/combined-newsqa-data-v1.json ]]; then
+  # Build newsqa dataset (Taken from README)
+  echo "Building docker image..."
+  sudo docker build -t maluuba/newsqa .
+  echo "Compiling dataset..."
+  sudo docker run --rm -it -v ${PWD}:/usr/src/newsqa --name newsqa maluuba/newsqa
 
-# You now have the datasets. See
-# combined-newsqa-data-*.json,
-# combined-newsqa-data-*.csv,
+  # You now have the datasets. See
+  # combined-newsqa-data-*.json,
+  # combined-newsqa-data-*.csv,
+fi
 
-# Tokenize, optional
-echo "Splitting dataset..."
-# sudo docker run --rm -it -v ${PWD}:/usr/src/newsqa --name newsqa maluuba/newsqa /bin/bash --login -c 'python maluuba/newsqa/data_generator.py'
-# maluuba/newsqa/newsqa-data-tokenized-*.csv.
+if [[ ! -f $REPO_DIR/split_data/train.csv ]]; then
+  # Tokenize, optional
+  echo "Splitting dataset..."
+  sudo docker run --rm -it -v ${PWD}:/usr/src/newsqa --name newsqa maluuba/newsqa /bin/bash --login -c 'python maluuba/newsqa/data_generator.py'
+  # maluuba/newsqa/newsqa-data-tokenized-*.csv.
 
-echo "Changing ownership over data after docker operations..."
-# sudo chown -R $USER $REPO_DIR
+  echo "Changing ownership over data after docker operations..."
+  sudo chown -R $USER $REPO_DIR
+fi
 
 _log_path=${BASEDIR}/conversion.log
 _data_path=${REPO_DIR}/split_data
