@@ -80,6 +80,7 @@ _data_path=${REPO_DIR}/split_data
 
 cd $DATASET_CONVERTER_PATH
 # convert to squad
+echo "Converting train set..."
 # train
 pipenv run python executor.py \
   --log_path=$_log_path  \
@@ -89,6 +90,7 @@ pipenv run python executor.py \
   --to_format="squad" \
   --to_file_name="train.json"
 
+echo "Converting dev set..."
 # dev
 pipenv run python executor.py \
   --log_path=$_log_path  \
@@ -98,6 +100,7 @@ pipenv run python executor.py \
   --to_format="squad" \
   --to_file_name="dev.json"
 
+echo "Converting test set..."
 # test
 pipenv run python executor.py \
   --log_path=$_log_path  \
@@ -107,6 +110,7 @@ pipenv run python executor.py \
   --to_format="squad" \
   --to_file_name="test.json"
 
+echo "done"
 mv $_data_path/newsqa_to_squad_train.json $DST_DATASET/train.json
 mv $_data_path/newsqa_to_squad_dev.json $DST_DATASET/dev.json
 mv $_data_path/newsqa_to_squad_test.json $DST_DATASET/test.json
