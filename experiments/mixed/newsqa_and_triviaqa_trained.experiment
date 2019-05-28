@@ -21,9 +21,8 @@ OUTPUT_DIR=$_BASE_DIR/newsqa_and_triviaqa_trained_out
 
 TRIVIA_QA_DATA=`pwd`/experiments/triviaqa/data/triviaqa_squad
 
-TRAIN_FILE=$TRIVIA_QA_DATA/train.json
-PREDICT_FILE=$TRIVIA_QA_DATA/dev.json
-
+TRAIN_FILE=$TRIVIA_QA_DATA/wikipedia-train.json
+PREDICT_FILE=$TRIVIA_QA_DATA/wikipedia-dev.json
 
 TRAIN=True
 THRESH='-2.1419568061828613'
