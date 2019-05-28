@@ -29,6 +29,8 @@ mkdir squad_output
 pip install --user pipenv
 export PATH=$(python -m site --user-base)/bin:$PATH
 
+# ensure tensorflow-gpu
+echo "tensorflow-gpu  == 1.11.0" >> bert/requirements.txt
 pipenv install --skip-lock --python 3 -r bert/requirements.txt
 
 # install dataset converter (converts various formats to SQuAD)
