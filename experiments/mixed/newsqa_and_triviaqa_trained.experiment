@@ -17,7 +17,7 @@ MODEL_DIR=$NEWS_QA_DIR/newsqa_trained_out
 CHECKPOINT=$MODEL_DIR/model.ckpt-5584
 
 _BASE_DIR=`pwd`/experiments/mixed
-OUTPUT_DIR=$_BASE_DIR/newsqa_and_trivia_trained_out
+OUTPUT_DIR=$_BASE_DIR/newsqa_and_triviaqa_trained_out
 
 TRIVIA_QA_DATA=`pwd`/experiments/triviaqa/data/triviaqa_squad
 
