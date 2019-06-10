@@ -1,0 +1,14 @@
+#!/bin/bash
+
+EXP_NAME='Mixed-NewsQA'
+META='Mixed model (trained over various datasets) predictions over NewsQA dataset'
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/mixed/newsqa_and_triviaqa_trained_out
+PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
+
+TRAIN=False
+THRESH='-2.1419568061828613'

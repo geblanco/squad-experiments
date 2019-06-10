@@ -1,0 +1,14 @@
+#!/bin/bash
+
+EXP_NAME='Base-TriviaQA'
+META='Base model predictions over TriviaQA dataset'
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/squad_output
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
+
+TRAIN=False
+THRESH='-2.1419568061828613'

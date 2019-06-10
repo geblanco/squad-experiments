@@ -12,7 +12,7 @@ SEQ_LENGTH=${SEQ_LENGTH:-384}
 BERT_DIR=${BERT_DIR:-`pwd`/models/uncased}
 SQUAD_DIR=${SQUAD_DIR:-`pwd`/squad}
 OUTPUT_DIR=${OUTPUT_DIR:-`pwd`/squad_output}
-CHECKPOINT=${CHECKPOINT:-$BERT_DIR/bert_model.ckpt}
+CHECKPOINT=${CHECKPOINT}
 
 TRAIN=${TRAIN:-True}
 THRESH=${THRESH:-'0'}
@@ -23,6 +23,7 @@ PREDICT_FILE=${PREDICT_FILE:-$SQUAD_DIR/dev-v2.0.json}
 TRAIN_EPOCHS=${TRAIN_EPOCHS:-2.0}
 
 cd bert
+
 python run_squad.py \
   --vocab_file=$BERT_DIR/vocab.txt \
   --bert_config_file=$BERT_DIR/bert_config.json \
