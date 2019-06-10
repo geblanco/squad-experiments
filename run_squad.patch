@@ -1,5 +1,5 @@
 diff --git a/run_squad.py b/run_squad.py
-index edd4c3e..239ae14 100644
+index edd4c3e..1761096 100644
 --- a/run_squad.py
 +++ b/run_squad.py
 @@ -284,7 +284,7 @@ def read_squad_examples(input_file, is_training):
@@ -68,20 +68,20 @@ index edd4c3e..239ae14 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
-@@ -903,9 +903,14 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -903,9 +903,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
 -      score_diff = score_null - best_non_null_entry.start_logit - (
 -          best_non_null_entry.end_logit)
--      scores_diff_json[example.qas_id] = score_diff
 +      if best_non_null_entry:
 +        score_diff = score_null - best_non_null_entry.start_logit - (
 +            best_non_null_entry.end_logit)
-+        scores_diff_json[example.qas_id] = score_diff
 +      else:
 +        # all n best entries are null, we assign a higher diff than threshold
 +        score_diff = FLAGS.null_score_diff_threshold + 1.0
++      
+       scores_diff_json[example.qas_id] = score_diff
 +
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
