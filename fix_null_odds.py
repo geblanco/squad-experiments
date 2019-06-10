@@ -3,7 +3,7 @@ import sys, json, argparse
 def get_parser():
   parser = argparse.ArgumentParser()
   parser.add_argument('--preds_file', help="Path to the SQuAD v2 compatible predictions file.")
-  parser.add_argument('--null_ods_file', help="Path to the SQuAD v2 compatible null odds file.")
+  parser.add_argument('--null_odds_file', help="Path to the SQuAD v2 compatible null odds file.")
   parser.add_argument('--null_score_value', help="Value to use to fill missing values", default=1.0)
   parser.add_argument('--overwrite', action='store_true', default=True, help="Whether to overwrite source null odds file or generate a new one (default).")
   return parser
@@ -27,7 +27,7 @@ if __name__ == '__main__':
   args, _ = get_parser().parse_known_args()
   
   predictions = json.load(open(args.preds_file, 'r'))
-  null_odds = json.load(open(args.null_ods_file, 'r'))
+  null_odds = json.load(open(args.null_odds_file, 'r'))
 
   file = args.null_odds_file
   if not args.overwrite:
