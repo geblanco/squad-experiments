@@ -8,7 +8,7 @@ def get_parser():
   parser.add_argument('--overwrite', action='store_true', default=True, help="Whether to overwrite source null odds file or generate a new one (default).")
   return parser
 
-def work(predictions_ids, null_odds_ids, output_file):
+def work(predictions, null_odds, null_score, output_file):
   predictions_ids = list(predictions.keys())
   null_odds_ids = list(null_odds.keys())
 
@@ -19,9 +19,9 @@ def work(predictions_ids, null_odds_ids, output_file):
   diff = [d for d in predictions_ids if d not in null_odds_ids]
 
   for diff_id in diff:
-    null_odds[diff_id] = args.null_score_value
+    null_odds[diff_id] = null_score
 
-  json.dump(fd=open(output_file, 'w'), obj=null_ods, indent=2)
+  json.dump(fp=open(output_file, 'w'), obj=null_odds, indent=2)
 
 if __name__ == '__main__':
   args, _ = get_parser().parse_known_args()
@@ -33,4 +33,4 @@ if __name__ == '__main__':
   if not args.overwrite:
     file = args.null_odds_file + '_corrected.json'
 
-  work(predictions_ids, null_odds_ids, file)
+  work(predictions, null_odds, float(args.null_score_value), file)
