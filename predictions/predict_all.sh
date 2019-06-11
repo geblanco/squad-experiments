@@ -5,7 +5,7 @@ for prediction in ${predict_files[@]}; do
   cd ..
   ./run.sh $prediction
   # source first to do it on root folder
-  source $prediction
+  source predictions/$prediction
   cd -
   # get the results to avoid overwriting
   cp $OUTPUT_DIR/nbest_predictions.json "${prediction}_nbest_predictions.json"

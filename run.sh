@@ -11,7 +11,7 @@ OUTPUT_DIR=${OUTPUT_DIR:-`pwd`/squad_output}
 TRAIN=${TRAIN:-True}
 THRESH=${THRESH:-'0'}
 POWEROFF=${POWEROFF:-0}
-BACKUP=${BACKUP:-0}
+BACKUP=${BACKUP:-1}
 
 if [[ -z $DOCKERIZE || $DOCKERIZE -eq 0 ]]; then
   { time ./run_squad.sh 2>&1 | tee $OUTPUT_DIR/train_log; } 2>$OUTPUT_DIR/run_time.txt
