@@ -1,7 +1,7 @@
 #!/bin/bash
 
 predict_files=$(ls *.experiment)
-for prediction in "${predict_files[@]}"; do
+for prediction in ${predict_files[@]}; do
   cd ..
   ./run.sh $prediction
   cd -
