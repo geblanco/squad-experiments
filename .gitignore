@@ -118,3 +118,4 @@ experiments/**/data
 
 # dataset converter
 converter
+predictions/*_data
