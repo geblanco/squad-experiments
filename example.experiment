@@ -14,7 +14,7 @@
 # BACKUP            N                 N
 # 
 # BATCH_SIZE        N                 12
-# SEQ_LENGTH        N                 384
+# SEQ_LENGTH        N                 256
 # TRAIN_EPOCHS      N                 2
 # 
 # BERT_DIR          N               `pwd`/models/uncased

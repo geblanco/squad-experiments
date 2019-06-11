@@ -4,10 +4,11 @@
 # Mandatory SRVR_ADDR, SRVR_DEST_DIR
 # Mandatory BATCH_SIZE, SEQ_LENGTH
 # Optional EXP_NAME, GPUS_NO, GPUS_MODEL, CHECKPOINT
-[ -f experiment ] && source experiment
+exp=${1:-experiment}
+[ -f $exp ] && source $exp
 
 BATCH_SIZE=${BATCH_SIZE:-12}
-SEQ_LENGTH=${SEQ_LENGTH:-384}
+SEQ_LENGTH=${SEQ_LENGTH:-256}
 
 BERT_DIR=${BERT_DIR:-`pwd`/models/uncased}
 SQUAD_DIR=${SQUAD_DIR:-`pwd`/squad}
