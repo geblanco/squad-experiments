@@ -34,10 +34,15 @@ echo "Run squad.experiment"
 ./run.sh squad.experiment
 
 # copy model to avoid overriding the original squad one
-experiments=($newsqa $triviaqa $mixed)
+experiments=($newsqa $triviaqa)
 for experiment in ${experiments[@]}; do
   echo "Copy model from $squad_model_output to ${experiment}_out"
   cp -r ${squad_model_output}/* ${experiment}_out
   echo "Run ${experiment}.experiment"
   ./run.sh "${experiment}.experiment"
 done
+
+echo "Copy model from $newsqa_model_output to ${mixed}_out"
+cp -r ${newsqa_model_output}/* ${mixed}_out
+echo "Run ${mixed}.experiment"
+./run.sh "${mixed}.experiment"

@@ -5,7 +5,7 @@ META='TriviaQA Accuracy trained over triviaqa'
 
 DOCKERIZE=0
 BACKUP=0
-TRAIN_EPOCHS=1
+TRAIN_EPOCHS=2
 
 BATCH_SIZE=16
 SEQ_LENGTH=256
