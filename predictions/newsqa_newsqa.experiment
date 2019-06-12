@@ -11,4 +11,4 @@ OUTPUT_DIR=`pwd`/experiments/newsqa/newsqa_trained_out
 PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
 
 TRAIN=False
-THRESH='-2.1419568061828613'
+THRESH="10.659387782216072"

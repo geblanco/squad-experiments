@@ -11,4 +11,4 @@ OUTPUT_DIR=`pwd`/experiments/mixed/newsqa_and_triviaqa_trained_out
 PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
 
 TRAIN=False
-THRESH='-2.1419568061828613'
+THRESH="-2.144806385040283"
