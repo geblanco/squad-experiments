@@ -1,0 +1,22 @@
+#!/bin/bash
+
+EXP_NAME='SQuAD Train'
+META='SQuAD Accuracy trained over SQuAD dataset'
+
+DOCKERIZE=0
+BACKUP=0
+TRAIN_EPOCHS=2
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/squad_output
+
+_DATA_DIR=`pwd`/squad
+
+TRAIN_FILE=$_DATA_DIR/train-v2.0.json
+PREDICT_FILE=$_DATA_DIR/dev-v2.0.json
+
+TRAIN=True
+THRESH='-2.1419568061828613'
