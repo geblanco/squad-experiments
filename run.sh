@@ -3,11 +3,11 @@
 exp=${1:-experiment}
 [ -f $exp ] && source $exp
 
-if [[ ! -z $BACKUP && $BACKUP -eq 1 ]]; then
+if [[ -z $BACKUP && $BACKUP -eq 1 ]]; then
   [[ -z SRVR_ADDR || -z SRVR_DEST_DIR ]] && (echo 'No backup space'; exit 1)
 fi
 
-if [[ ! -z $OUTPUT_DIR ]]; then
+if [[ -z $OUTPUT_DIR ]]; then
   echo "No output directory!"
   exit 2
 fi
