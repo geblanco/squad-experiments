@@ -11,7 +11,6 @@ BATCH_SIZE=16
 SEQ_LENGTH=256
 
 BERT_DIR=`pwd`/models/uncased
-MODEL_DIR=`pwd`/squad_output
 _BASE_DIR=`pwd`/experiments/newsqa
 _DATA_DIR=$_BASE_DIR/data
 
@@ -21,6 +20,5 @@ OUTPUT_DIR=$_BASE_DIR/newsqa_trained_out
 TRAIN_FILE=$_QA_DIR/train.json
 PREDICT_FILE=$_QA_DIR/dev.json
 
-CHECKPOINT=$MODEL_DIR/model.ckpt-16289
 TRAIN=True
 THRESH='-2.1419568061828613'

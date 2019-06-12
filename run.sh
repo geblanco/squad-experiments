@@ -7,7 +7,11 @@ if [[ ! -z $BACKUP && $BACKUP -eq 1 ]]; then
   [[ -z SRVR_ADDR || -z SRVR_DEST_DIR ]] && (echo 'No backup space'; exit 1)
 fi
 
-OUTPUT_DIR=${OUTPUT_DIR:-`pwd`/squad_output}
+if [[ ! -z $OUTPUT_DIR ]]; then
+  echo "No output directory!"
+  exit 2
+fi
+
 POWEROFF=${POWEROFF:-0}
 BACKUP=${BACKUP:-0}
 
