@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# exit on error
-set -e
+dockerize=${1:-0}
 
 # download bert repo
 git clone https://github.com/google-research/bert.git
@@ -25,18 +24,22 @@ cd -
 # bert output
 mkdir squad_output
 
-# install pipenv
-pip install --user pipenv
-export PATH=$(python -m site --user-base)/bin:$PATH
+if [[ $dockerize -eq 0 ]]; then
+  # install pipenv
+  pip install --user pipenv
+  export PATH=$(python -m site --user-base)/bin:$PATH
 
-# ensure tensorflow-gpu
-echo "tensorflow-gpu  == 1.11.0" >> bert/requirements.txt
-pipenv install --skip-lock --python 3 -r bert/requirements.txt
+  # ensure tensorflow-gpu
+  echo "tensorflow-gpu  == 1.11.0" >> bert/requirements.txt
+  pipenv install --skip-lock --python 3 -r bert/requirements.txt
 
-# install dataset converter (converts various formats to SQuAD)
-git clone https://github.com/m0n0l0c0/qa_datasets_converter converter
-cd converter
+  # install dataset converter (converts various formats to SQuAD)
+  git clone https://github.com/m0n0l0c0/qa_datasets_converter converter
+  cd converter
 
-pipenv install --skip-lock --python 3 -r requirements.txt
+  pipenv install --skip-lock --python 3 -r requirements.txt
 
-cd -
+  cd -
+else
+  echo "Asked for docker install, no packages to install"
+fi
