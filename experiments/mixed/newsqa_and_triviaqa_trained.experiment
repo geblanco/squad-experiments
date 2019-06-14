@@ -16,6 +16,7 @@ NEWS_QA_DIR=`pwd`/experiments/newsqa
 
 _BASE_DIR=`pwd`/experiments/mixed
 OUTPUT_DIR=$_BASE_DIR/newsqa_and_triviaqa_trained_out
+REUSE_MODEL=`pwd`/experiments/newsqa/newsqa_trained_out/checkpoint
 
 TRIVIA_QA_DATA=`pwd`/experiments/triviaqa/data/triviaqa_squad
 

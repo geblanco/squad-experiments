@@ -1,35 +1,49 @@
 #!/bin/bash
 
-exp=${1:-experiment}
-[ -f $exp ] && source $exp
+# run squad experiment
+# ToDo := Should check user confirmation
+#   heavy delete operations are carried out.
+clean_data_dir() {
+  local dir=$1
+  if [[ -d $dir ]]; then
+    echo "Delete $dir"
+    rm -rf $dir
+    echo "Create $dir"
+    mkdir -p $dir
+  fi
+}
 
-if [[ -z $BACKUP && $BACKUP -eq 1 ]]; then
-  [[ -z SRVR_ADDR || -z SRVR_DEST_DIR ]] && (echo 'No backup space'; exit 1)
-fi
+copy_model() {
+  local checkpoint_file=$1
+  local output=$2
+  local model_chkpt=$(head -n 1 $checkpoint_file | grep -oE 'model.ckpt-[0-9]+')
+  local model=$(dirname $checkpoint_file)/${model_chkpt}
+  local model_data=${model}.data-00000-of-00001
+  local model_index=${model}.index
+  local model_meta=${model}.meta
+  cp ${model_data} "${output}/model.ckpt.data-00000-of-00001"
+  cp ${model_index} "${output}/model.ckpt.index"
+  cp ${model_meta} "${output}/model.ckpt.meta"
+}
 
-if [[ -z $OUTPUT_DIR ]]; then
-  echo "No output directory!"
-  exit 2
-fi
+# no errors accepted
+set -e
 
-POWEROFF=${POWEROFF:-0}
-BACKUP=${BACKUP:-0}
+experiments=($@)
+for exp in ${experiments[@]}; do
+  data_dir="${exp%.*}_out"
+  clean_data_dir $data_dir
+  source $exp
+  if [[ ! -z $REUSE_MODEL ]]; then
+    # copy model to avoid overriding the original squad one
+    copy_model $REUSE_MODEL $OUTPUT_DIR
+  fi
+  # run experiment
+  echo "Run $exp"
+  ./run_experiment.sh $exp
+done
 
-if [[ -z $DOCKERIZE || $DOCKERIZE -eq 0 ]]; then
-  { time ./run_squad.sh $exp 2>&1 | tee $OUTPUT_DIR/train_log; } 2>$OUTPUT_DIR/run_time.txt
-else
-  # in case of docker, just copy the experiment file
-  cp $exp experiment
-  { time nvidia-docker run \
-    -v `pwd`:/workspace \
-    nvcr.io/nvidia/tensorflow:19.02-py3 \
-    /workspace/run_squad.sh \
-    2>&1 \
-    | tee $OUTPUT_DIR/train_log; \
-  } 2>$OUTPUT_DIR/run_time.txt
-fi
-
-# backup data
-[ $BACKUP -eq 0 ] || rsync -avrzP $OUTPUT_DIR $SRVR_ADDR:$SRVR_DEST_DIR
-[ $POWEROFF -eq 0 ] || sudo poweroff
-
+# run all predictions after training all models
+./predict.sh
+./eval_squad.sh 1
+./predict.sh
