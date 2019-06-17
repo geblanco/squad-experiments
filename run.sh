@@ -45,5 +45,5 @@ done
 
 # run all predictions after training all models
 ./predict.sh
-./eval_squad.sh 1
+./evaluate_squad.sh 1
 ./predict.sh

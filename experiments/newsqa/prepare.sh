@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# whether to only prepare the file system or
+# do the full process
+only_fs=${1:-0}
+
 cwd=`pwd`
 DATASET_CONVERTER_PATH=$(realpath ../..)/converter
 
@@ -35,6 +39,10 @@ exists $BASEDIR || mkdir $BASEDIR
 
 # create destiny dataset dir if necessary 
 exists $DST_DATASET || mkdir $DST_DATASET
+
+if [[ $only_fs -eq 1 ]]; then
+  exit 0
+fi
 
 cd $BASEDIR
 
