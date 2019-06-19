@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exp=${1:-experiment}
+exp=$1
 log_prefix=${2:-train}
 
 [ -f $exp ] && source $exp
