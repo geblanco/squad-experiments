@@ -8,9 +8,9 @@ clean_data_dir() {
   if [[ -d $dir ]]; then
     echo "Delete $dir"
     rm -rf $dir
-    echo "Create $dir"
-    mkdir -p $dir
   fi
+  echo "Create $dir"
+  mkdir -p $dir
 }
 
 copy_model() {
@@ -42,6 +42,6 @@ for exp in ${experiments[@]}; do
     drop_name=$(basename $DROP_MODEL)
     mkdir -p $drop_base
     copy_model $OUTPUT_DIR/checkpoint $drop_base $drop_name
-    unset $DROP_MODEL
+    unset DROP_MODEL
   fi
 done
