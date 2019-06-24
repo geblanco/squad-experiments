@@ -1,0 +1,24 @@
+#!/bin/bash
+
+_me='newsqa_trained_base_model.experiment'
+
+EXP_NAME='News QA-Trained'
+META='News QA model newsqa over bert base'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
+CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
+DROP_MODEL=`pwd`/models/newsqa/newsqa_base_model
+
+TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
+PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
+
