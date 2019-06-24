@@ -37,6 +37,9 @@ for exp in ${experiments[@]}; do
   # run experiment
   echo "Run $exp"
   ./run_experiment.sh $exp
+  if [[ $? -ne 0 ]]; then
+    exit $?
+  fi
   if [[ "$TRAIN" == "True" && ! -z $DROP_MODEL ]]; then
     drop_base=$(dirname $DROP_MODEL)
     drop_name=$(basename $DROP_MODEL)
