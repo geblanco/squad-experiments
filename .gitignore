@@ -104,7 +104,7 @@ venv.bak/
 .mypy_cache/
 
 # SQuAD data
-./squad
+squad/
 squad_output
 models
 data
@@ -119,3 +119,4 @@ experiments/**/data
 # dataset converter
 converter
 predictions/*/*_data
+plots
