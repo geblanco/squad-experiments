@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_me='squad_trained_triviaqa_model.experiment'
+
+EXP_NAME='SQuAD-Trained +TriviaQA'
+META='SQuAD model over TriviaQA model'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=False
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments_v2/${_me%.*}_out
+CHECKPOINT=`pwd`/models/squad/squad_triviaqa_model.ckpt
+
+TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
+

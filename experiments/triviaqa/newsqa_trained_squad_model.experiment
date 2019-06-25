@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_me='newsqa_trained_squad_model.experiment'
+
+EXP_NAME='News QA-Trained +SQuAD'
+META='News QA model newsqa over SQuAD'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=False
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
+CHECKPOINT=`pwd`/models/newsqa/newsqa_squad_model.ckpt
+
+TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
+
