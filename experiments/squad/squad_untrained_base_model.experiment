@@ -15,7 +15,7 @@ TRAIN=False
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
-OUTPUT_DIR=`pwd`/experiments_v2/${_me%.*}_out
+OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
 CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
 
 TRAIN_FILE=`pwd`/squad/train-v2.0.json
