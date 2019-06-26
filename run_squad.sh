@@ -13,7 +13,8 @@
 #   THRESH
 
 exp=$1
-[ -f $exp ] && source $exp
+[ ! -f $exp ] && exit 1;
+source $exp
 
 cd bert
 
