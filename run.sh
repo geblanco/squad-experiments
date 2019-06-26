@@ -44,6 +44,7 @@ for exp in ${experiments[@]}; do
     drop_base=$(dirname $DROP_MODEL)
     drop_name=$(basename $DROP_MODEL)
     mkdir -p $drop_base
+    echo "Copy model $OUTPUT_DIR/checkpoint $drop_base $drop_name"
     copy_model $OUTPUT_DIR/checkpoint $drop_base $drop_name
     unset DROP_MODEL
   fi
