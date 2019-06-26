@@ -1,21 +1,17 @@
 #!/bin/bash
 
 
+data_dir=${1:-results}; shift
 correct_thr=${1:-0}; shift
-
-if [[ $# -gt 0 ]]; then
-  predictions=$@
-else
-  predictions=$(ls -d predictions/*/ | cut -f2 -d'/')
-fi
+predictions=$(ls -d $data_dir/*/ | cut -f2 -d'/')
 
 set -e
 
 eval_script=`pwd`/squad/evaluate-v2.0.py
 for prediction in ${predictions[@]}; do
-  experiments=$(ls predictions/${prediction}/*.experiment)
+  experiments=$(ls ${data_dir}/${prediction}/*.experiment)
   for exp in ${experiments[@]}; do
-    prediction_data="${exp%.*}_data"
+    prediction_data="${exp%.*}_out"
     if [[ -d $prediction_data ]]; then
       source $exp
       output=${prediction_data}/results.json
