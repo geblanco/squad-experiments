@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='squad_trained_triviaqa_model.experiment'
+_me='newsqa_pred_squad_trained_triviaqa_model.experiment'
 
 EXP_NAME='SQuAD-Trained +TriviaQA'
 META='SQuAD model over TriviaQA model'

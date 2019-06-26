@@ -104,19 +104,20 @@ venv.bak/
 .mypy_cache/
 
 # SQuAD data
-squad/
-squad_output
-models
-data
-logs
-bert
-results
+/squad
+/squad_output
+/models
+/data
+/logs
+/bert
+/results
+/results.tar.gz
 
 # experiments data
 experiments/**/data
 # should results, models, etc be included here?
 
 # dataset converter
-converter
+/converter
 predictions/*/*_data
-plots
+/plots

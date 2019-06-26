@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='triviaqa_trained_squad_model.experiment'
+_me='squad_pred_triviaqa_trained_squad_model.experiment'
 
 EXP_NAME='TriviaQA-Trained +SQuAD'
 META='TriviaQA Accuracy trained over SQuAD model'
@@ -18,5 +18,5 @@ BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
 CHECKPOINT=`pwd`/models/triviaqa/triviaqa_squad_model.ckpt
 
-TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
-PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
+TRAIN_FILE=`pwd`/squad/train-v2.0.json
+PREDICT_FILE=`pwd`/squad/dev-v2.0.json
