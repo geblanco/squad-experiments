@@ -35,6 +35,10 @@ for model_data_dir in model_data_dirs:
   data[dataset_name] = model_data
 
 df = pd.DataFrame(data)
+print(df)
 ax = df.plot(kind='bar')
 ax.set_xticklabels(df.index, rotation=20)
+plt.yticks(list(range(0, 101, 10)))
+plt.grid(axis='y', alpha=0.5)
+
 plt.show()

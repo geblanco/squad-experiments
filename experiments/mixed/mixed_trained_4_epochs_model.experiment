@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_me='mixed_trained_4_epochs_model.experiment'
+
+EXP_NAME='SQuAD + TriviaQA + NewsQA 4 Epochs Model'
+META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 4 epochs'
+
+DOCKERIZE=1
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=4
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
+CHECKPOINT=`pwd`/models/mixed/mixed_2_epochs_model.ckpt
+DROP_MODEL=`pwd`/models/mixed/mixed_4_epochs_model
+
+TRAIN_FILE=`pwd`/experiments/mixed/data/train.json
+PREDICT_FILE=`pwd`/experiments/mixed/data/dev.json
