@@ -15,7 +15,7 @@ TRAIN=True
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
-OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
+OUTPUT_DIR=`pwd`/experiments/squad/${_me%.*}_out
 CHECKPOINT=`pwd`/models/newsqa/newsqa_base_model.ckpt
 DROP_MODEL=`pwd`/models/squad/squad_newsqa_model
 

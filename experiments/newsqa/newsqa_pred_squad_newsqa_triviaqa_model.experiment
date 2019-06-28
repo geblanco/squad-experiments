@@ -15,7 +15,7 @@ TRAIN=False
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
-OUTPUT_DIR=`pwd`/experiments/${_me%.*}_out
+OUTPUT_DIR=`pwd`/experiments/newsqa/${_me%.*}_out
 CHECKPOINT=`pwd`/models/squad/squad_newsqa_triviaqa_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
