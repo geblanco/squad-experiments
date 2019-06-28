@@ -1,9 +1,9 @@
 #!/bin/bash
 
-_me='triviaqa_trained_newsqa_model.experiment'
+_me='squad_pred_mixed_2_epochs.experiment'
 
-EXP_NAME='TriviaQA-Trained +NewsQA'
-META='TriviaQA Accuracy trained over NewsQA model'
+EXP_NAME='SQuAD + TriviaQA + NewsQA 2 Epochs Model'
+META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 2 epochs'
 
 DOCKERIZE=0
 BACKUP=0
@@ -16,7 +16,7 @@ THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/squad/${_me%.*}_out
-CHECKPOINT=`pwd`/models/triviaqa/triviaqa_newsqa_model.ckpt
+CHECKPOINT=`pwd`/models/mixed/mixed_2_epochs_model.ckpt
 
 TRAIN_FILE=`pwd`/squad/train-v2.0.json
 PREDICT_FILE=`pwd`/squad/dev-v2.0.json
