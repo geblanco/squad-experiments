@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='squad_pred_mixed_4_epochs.experiment'
+_me='squad_pred_mixed_6_epochs.experiment'
 
 EXP_NAME='SQuAD + TriviaQA + NewsQA 6 Epochs Model'
 META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 6 epochs'
