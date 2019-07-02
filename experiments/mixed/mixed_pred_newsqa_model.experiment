@@ -1,0 +1,22 @@
+#!/bin/bash
+
+_me='mixed_pred_newsqa_model.experiment'
+
+EXP_NAME='NewsQA Model against mixed dataset'
+META='NewsQA Model over mixed dataset, measure generalization'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=False
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/mixed/${_me%.*}_out
+CHECKPOINT=`pwd`/models/newsqa/newsqa_base_model
+
+TRAIN_FILE=`pwd`/experiments/mixed/data/mixed_squad/train.json
+PREDICT_FILE=`pwd`/experiments/mixed/data/mixed_squad/dev.json
