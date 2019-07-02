@@ -16,7 +16,7 @@ THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/mixed/${_me%.*}_out
-CHECKPOINT=`pwd`/models/triviaqa/triviaqa_base_model
+CHECKPOINT=`pwd`/models/triviaqa/triviaqa_base_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/mixed/data/mixed_squad/train.json
 PREDICT_FILE=`pwd`/experiments/mixed/data/mixed_squad/dev.json

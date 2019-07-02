@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='triviaqa_pred_squad_newsqa_triviaqa_model.experiment'
+_me='triviaqa_pred_squad_trained_triviaqa_newsqa_model.experiment'
 
 EXP_NAME='SQuAD-Trained +NewsQA +TriviaQA'
 META='SQuAD model over newsqa and triviaqa models'
@@ -16,7 +16,7 @@ THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/triviaqa/${_me%.*}_out
-CHECKPOINT=`pwd`/models/squad/squad_newsqa_triviaqa_model.ckpt
+CHECKPOINT=`pwd`/models/squad/squad_triviaqa_newsqa_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
 PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
