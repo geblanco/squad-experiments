@@ -2,9 +2,12 @@ from matplotlib import pyplot as plt
 import json, os, sys
 import pandas as pd
 
-if len(sys.argv) < 2:
-  print('Usage: plot_results.py <data dir>')
-  sys.exit(0)
+# if len(sys.argv) < 2:
+#   print('Usage: plot_results.py <data dir>')
+#   sys.exit(0)
+# 
+# main_folder = sys.argv[1]
+main_folder = 'results'
 
 def clean_name(name): 
   name_tokens=name.split('_') 
@@ -27,14 +30,14 @@ def read_model_data(model_dir):
   return acc_data
 
 data = {}
-model_data_dirs = ['{}/{}'.format(sys.argv[1], d) for d in os.listdir(sys.argv[1])]
+model_data_dirs = ['{}/{}'.format(main_folder, d) for d in os.listdir(main_folder)]
 for model_data_dir in model_data_dirs:
   model_data = read_model_data(model_data_dir)
   dataset_name = model_data_dir.split('/')[-1]
-  # plot_model_data(dataset_name, model_data)
   data[dataset_name] = model_data
 
 df = pd.DataFrame(data)
+df = df.reindex(['newsqa', 'squad', 'triviaqa', 'mixed'], axis=1)
 print(df)
 ax = df.plot(kind='bar')
 ax.set_xticklabels(df.index, rotation=20)
