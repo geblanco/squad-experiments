@@ -8,19 +8,27 @@ import pandas as pd
 # 
 # main_folder = sys.argv[1]
 main_folder = 'results'
+number_seq = ''.join([str(s) for s in list(range(10))])
 
 def clean_name(name): 
-  name_tokens=name.split('_') 
+  name_tokens = name.split('_') 
   if name_tokens[1] == 'pred' or name_tokens[1] == 'untrained': 
       name_tokens[0:2] = '' 
   elif name_tokens[1] == 'trained' and name_tokens[2] == 'base': 
       name_tokens[1:3] = '' 
   elif name == 'squad_trained_newsqa_triviaqa_model_out': 
-      name_tokens = 'squad_newsqa_triviaqa_model_out'.split('_') 
-  if name_tokens[1] == 'trained': 
-      name_tokens[1] = '+' 
-  name_tokens[-2:] = '' 
-  return '_'.join(name_tokens) 
+      name_tokens = 'squad_newsqa_triviaqa_model_out'.split('_')
+  # fixes for names like: mixed_trained_4_epochs_model_out
+  if name_tokens[1] == 'trained':
+    if name_tokens[2] not in number_seq:
+      name_tokens[1] = '+'
+    else:
+      name_tokens[1:2] = ''
+  name_tokens[-2:] = ''
+  if name_tokens[-1] == 'epochs':
+    name_tokens[-1:] = ''
+  # print('Clean %s -> %s' % (name, '_'.join(name_tokens)))
+  return '_'.join(name_tokens)
 
 def read_model_data(model_dir):
   data_dirs = [d for d in os.listdir(model_dir) if d.endswith('_out')]
