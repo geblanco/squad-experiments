@@ -2,12 +2,12 @@ from matplotlib import pyplot as plt
 import json, os, sys
 import pandas as pd
 
-# if len(sys.argv) < 2:
-#   print('Usage: plot_results.py <data dir>')
-#   sys.exit(0)
-# 
-# main_folder = sys.argv[1]
-main_folder = 'results'
+if len(sys.argv) < 2:
+  print('Usage: plot_results.py <data dir>')
+  sys.exit(0)
+
+main_folder = sys.argv[1]
+# main_folder = 'results'
 number_seq = ''.join([str(s) for s in list(range(10))])
 
 def clean_name(name): 
@@ -51,5 +51,10 @@ ax = df.plot(kind='bar')
 ax.set_xticklabels(df.index, rotation=20)
 plt.yticks(list(range(0, 101, 10)))
 plt.grid(axis='y', alpha=0.5)
+
+# to get a max over each dataset:
+# df.max()
+# to get the rows with the max values
+# df.loc[df.idxmax()]
 
 plt.show()
