@@ -10,7 +10,7 @@ mkdir squad
 # download squad files
 wget -q -O squad/train-v2.0.json https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v2.0.json
 wget -q -O squad/dev-v2.0.json https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v2.0.json
-wget -q -O squad/evaluate-v2.0.py https://worksheets.codalab.org/rest/bundles/0x6b567e1cf2e041ec80d7098f031c5c9e/contents/blob/
+wget -q -O squad/evaluate-v2.0.py https://gist.githubusercontent.com/m0n0l0c0/150f1fccbe63863756794cbe2dd4aa58/raw/5832020283f17f8091bd4727e1ca4dd111f592fe/evaluate-squad-v2.0.py
 
 mkdir models
 cd models
