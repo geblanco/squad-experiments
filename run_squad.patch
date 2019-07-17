@@ -1,5 +1,5 @@
 diff --git a/run_squad.py b/run_squad.py
-index edd4c3e..1761096 100644
+index edd4c3e..41a4854 100644
 --- a/run_squad.py
 +++ b/run_squad.py
 @@ -284,7 +284,7 @@ def read_squad_examples(input_file, is_training):
@@ -68,6 +68,15 @@ index edd4c3e..1761096 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
+@@ -657,7 +657,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+       start_loss = compute_loss(start_logits, start_positions)
+       end_loss = compute_loss(end_logits, end_positions)
+ 
+-      total_loss = (start_loss + end_loss) / 2.0
++      total_loss = tf.floordiv((start_loss + end_loss), 2.0, name='total_loss')
+ 
+       train_op = optimization.create_optimizer(
+           total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
 @@ -903,9 +903,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
@@ -86,3 +95,19 @@ index edd4c3e..1761096 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
+@@ -1212,7 +1218,14 @@ def main(_):
+         seq_length=FLAGS.max_seq_length,
+         is_training=True,
+         drop_remainder=True)
+-    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
++
++    early_stopping = tf.contrib.estimator.stop_if_no_decrease_hook(
++        estimator,
++        metric_name='total_loss',
++        max_steps_without_decrease=10,
++        min_steps=100)
++
++    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps, hooks=[early_stopping])
+ 
+   if FLAGS.do_predict:
+     eval_examples = read_squad_examples(

@@ -3,8 +3,9 @@
 dockerize=${1:-0}
 
 # download bert repo
-git clone https://github.com/google-research/bert.git
+git clone https://github.com/lambdal/bert.git
 patch -p1 bert/run_squad.py run_squad.patch
+patch -p1 bert/run_squad_hvd.py run_squad_hvd.patch
 
 mkdir squad
 # download squad files
