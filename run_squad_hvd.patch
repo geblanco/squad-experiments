@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..38d93e6 100644
+index 1fb44fe..9cb2172 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -286,7 +286,7 @@ def read_squad_examples(input_file, is_training):
@@ -68,16 +68,31 @@ index 1fb44fe..38d93e6 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
-@@ -659,7 +659,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -659,7 +659,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
        start_loss = compute_loss(start_logits, start_positions)
        end_loss = compute_loss(end_logits, end_positions)
  
 -      total_loss = (start_loss + end_loss) / 2.0
-+      total_loss = tf.floordiv((start_loss + end_loss), 2.0, name='total_loss')
++      total_loss = tf.div((start_loss + end_loss), 2.0, name='total_loss')
++
++      tf.summary.scalar('loss', total_loss)
++
++      logging_hook = tf.train.LoggingTensorHook({'loss': total_loss}, every_n_iter=10)
  
        train_op = optimization_hvd.create_optimizer(
            total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-@@ -905,9 +905,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -668,7 +672,9 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+           mode=mode,
+           loss=total_loss,
+           train_op=train_op,
+-          scaffold_fn=scaffold_fn)
++          scaffold_fn=scaffold_fn,
++          training_hooks=[logging_hook])
++
+     elif mode == tf.estimator.ModeKeys.PREDICT:
+       predictions = {
+           "unique_ids": unique_ids,
+@@ -905,9 +911,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
@@ -95,7 +110,7 @@ index 1fb44fe..38d93e6 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
-@@ -1226,7 +1232,13 @@ def main(_):
+@@ -1226,7 +1238,13 @@ def main(_):
          is_training=True,
          drop_remainder=True)
  
