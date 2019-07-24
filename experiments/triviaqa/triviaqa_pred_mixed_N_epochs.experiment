@@ -1,0 +1,22 @@
+#!/bin/bash
+
+_me='triviaqa_pred_mixed_N_epochs.experiment'
+
+EXP_NAME='SQuAD + TriviaQA + NewsQA N Epochs Model'
+META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for N epochs'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=100
+TRAIN=False
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/triviaqa/${_me%.*}_out
+CHECKPOINT=`pwd`/models/mixed/mixed_N_epochs_model.ckpt
+
+TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
