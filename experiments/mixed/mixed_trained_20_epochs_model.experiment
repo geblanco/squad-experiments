@@ -1,23 +1,24 @@
 #!/bin/bash
 
-_me='mixed_trained_8_epochs_model.experiment'
+_me='mixed_trained_20_epochs_model.experiment'
 
-EXP_NAME='SQuAD + TriviaQA + NewsQA 8 Epochs Model'
-META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 8 epochs'
+EXP_NAME='SQuAD + TriviaQA + NewsQA 20 Epochs Model'
+META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 20 epochs'
 
 DOCKERIZE=0
 BACKUP=0
 
 BATCH_SIZE=16
 SEQ_LENGTH=256
-TRAIN_EPOCHS=8
+TRAIN_EPOCHS=20
 TRAIN=True
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/mixed/${_me%.*}_out
-CHECKPOINT=`pwd`/models/mixed/mixed_6_epochs_model.ckpt
-DROP_MODEL=`pwd`/models/mixed/mixed_8_epochs_model
+CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
+DROP_MODEL=`pwd`/models/mixed/mixed_20_epochs_model
 
 TRAIN_FILE=`pwd`/experiments/mixed/data/mixed_squad/train.json
 PREDICT_FILE=`pwd`/experiments/mixed/data/mixed_squad/dev.json
+
