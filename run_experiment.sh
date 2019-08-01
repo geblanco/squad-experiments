@@ -22,12 +22,10 @@ if [[ -z $DOCKERIZE || $DOCKERIZE -eq 0 ]]; then
     | tee "${OUTPUT_DIR}/${log_prefix}.log";
   } 2>"${OUTPUT_DIR}/${log_prefix}.run_time"
 else
-  # in case of docker, just copy the experiment file
-  cp $exp experiment
   { time nvidia-docker run \
     -v `pwd`:/workspace \
     nvcr.io/nvidia/tensorflow:19.02-py3 \
-    /workspace/run_squad.sh \
+    /workspace/run_squad.sh $exp \
     2>&1 \
     | tee "${OUTPUT_DIR}/${log_prefix}.log"; \
   } 2>"${OUTPUT_DIR}/${log_prefix}.run_time"
