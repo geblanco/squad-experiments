@@ -15,7 +15,7 @@ TRAIN=False
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
-OUTPUT_DIR=`pwd`/experiments/squad/${_me%.*}_out
+OUTPUT_DIR=`pwd`/experiments/incremental/squad/${_me%.*}_out
 CHECKPOINT=`pwd`/models/mixed/mixed_6_epochs_model_30_sample.ckpt
 
 TRAIN_FILE=`pwd`/squad/train-v2.0.json

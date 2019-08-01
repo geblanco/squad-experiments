@@ -40,7 +40,7 @@ for exp in ${experiments[@]}; do
   # run experiment
   echo "Run $exp"
   # sample dataset and average over n_steps
-  if [[ -z $N_STEPS || -z $SAMPLE_SIZE ]]; do
+  if [[ -z $N_STEPS || -z $SAMPLE_SIZE ]]; then
     echo "Bad experiment without N_STEPS or SAMPLE_SIZE variables"
     continue
   fi
