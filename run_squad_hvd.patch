@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..7189bcd 100644
+index 1fb44fe..869e2e4 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -52,6 +52,9 @@ flags.DEFINE_string(
@@ -110,7 +110,7 @@ index 1fb44fe..7189bcd 100644
    """Creates an `input_fn` closure to be passed to TPUEstimator."""
  
    name_to_features = {
-@@ -731,21 +739,120 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+@@ -731,21 +739,128 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
              batch_size=batch_size,
              drop_remainder=drop_remainder))
  
@@ -197,6 +197,14 @@ index 1fb44fe..7189bcd 100644
 +              start_logits=start_logits,
 +              end_logits=end_logits))
 +
++    # remove examples and features not sampled from validation set
++    sampled_val_examples = []
++    sampled_val_features = []
++    for (example_index, (example, feature)) in enumerate(zip(val_examples, val_features)):
++      if example_index in sampled_ids:
++        sampled_val_examples.append(example)
++        sampled_val_features.append(feature)
++
 +    all_predictions, all_nbest_json, scores_diff_json = create_predictions(
 +        val_examples,
 +        val_features,
@@ -208,7 +216,7 @@ index 1fb44fe..7189bcd 100644
 +    acc = []
 +    for example in val_examples:
 +      qid = example.qas_id
-+      orig_text = example.orig_text
++      orig_text = example.orig_answer_text
 +      pred_text = all_predictions[qid]
 +      exact_score = compute_exact(orig_text, pred_text)
 +      f1_score = compute_f1(orig_text, pred_text)
@@ -237,7 +245,7 @@ index 1fb44fe..7189bcd 100644
  
    example_index_to_features = collections.defaultdict(list)
    for feature in all_features:
-@@ -905,9 +1012,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -905,9 +1020,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
@@ -255,7 +263,7 @@ index 1fb44fe..7189bcd 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
-@@ -915,6 +1028,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -915,6 +1036,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
  
      all_nbest_json[example.qas_id] = nbest_json
  
@@ -273,7 +281,7 @@ index 1fb44fe..7189bcd 100644
    with tf.gfile.GFile(output_prediction_file, "w") as writer:
      writer.write(json.dumps(all_predictions, indent=4) + "\n")
  
-@@ -925,7 +1049,6 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -925,7 +1057,6 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
      with tf.gfile.GFile(output_null_log_odds_file, "w") as writer:
        writer.write(json.dumps(scores_diff_json, indent=4) + "\n")
  
@@ -281,7 +289,7 @@ index 1fb44fe..7189bcd 100644
  def get_final_text(pred_text, orig_text, do_lower_case):
    """Project the tokenized prediction back to the original text."""
  
-@@ -1021,7 +1144,6 @@ def get_final_text(pred_text, orig_text, do_lower_case):
+@@ -1021,7 +1152,6 @@ def get_final_text(pred_text, orig_text, do_lower_case):
    output_text = orig_text[orig_start_position:(orig_end_position + 1)]
    return output_text
  
@@ -289,7 +297,7 @@ index 1fb44fe..7189bcd 100644
  def _get_best_indexes(logits, n_best_size):
    """Get the n-best logits from a list."""
    index_and_score = sorted(enumerate(logits), key=lambda x: x[1], reverse=True)
-@@ -1124,6 +1246,110 @@ def validate_flags_or_throw(bert_config):
+@@ -1124,6 +1254,110 @@ def validate_flags_or_throw(bert_config):
          "The max_seq_length (%d) must be greater than max_query_length "
          "(%d) + 3" % (FLAGS.max_seq_length, FLAGS.max_query_length))
  
@@ -350,7 +358,7 @@ index 1fb44fe..7189bcd 100644
 +  # in memory.
 +  val_writer = FeatureWriter(
 +      filename=val_filename,
-+      is_training=False)
++      is_training=True)
 +
 +  val_features = []
 +
@@ -400,7 +408,7 @@ index 1fb44fe..7189bcd 100644
  
  def main(_):
    hvd.init()
-@@ -1162,22 +1388,12 @@ def main(_):
+@@ -1162,22 +1396,12 @@ def main(_):
        log_step_count_steps=25,
        session_config=config)
  
@@ -427,7 +435,7 @@ index 1fb44fe..7189bcd 100644
  
    model_fn = model_fn_builder(
        bert_config=bert_config,
-@@ -1198,70 +1414,64 @@ def main(_):
+@@ -1198,70 +1422,64 @@ def main(_):
        predict_batch_size=FLAGS.predict_batch_size)
  
    if FLAGS.do_train:
@@ -534,7 +542,7 @@ index 1fb44fe..7189bcd 100644
          seq_length=FLAGS.max_seq_length,
          is_training=False,
          drop_remainder=False)
-@@ -1286,9 +1496,12 @@ def main(_):
+@@ -1286,9 +1504,12 @@ def main(_):
      output_nbest_file = os.path.join(FLAGS.output_dir, "nbest_predictions.json")
      output_null_log_odds_file = os.path.join(FLAGS.output_dir, "null_odds.json")
  
