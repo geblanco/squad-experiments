@@ -29,8 +29,6 @@ copy_model() {
 # no errors accepted
 set -e
 
-SRVR_HORACIO_ENV='gblanco@horacio.lsi.uned.es'
-
 experiments=($@)
 for exp in ${experiments[@]}; do
   source $exp
