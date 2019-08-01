@@ -15,7 +15,7 @@ TRAIN=True
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
-OUTPUT_DIR=`pwd`/experiments/mixed/${_me%.*}_out
+OUTPUT_DIR=`pwd`/experiments/incremental/${_me%.*}_out
 CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
 DROP_MODEL=`pwd`/models/mixed/mixed_6_epochs_model_30_sample
 
