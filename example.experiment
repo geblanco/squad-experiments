@@ -7,7 +7,8 @@
 # GPUS_NO           N                 1
 # GPUS_MODEL        N
 #
-# DOCKERIZE         N                 Y
+# DOCKERIZE         N                 F
+# HOROVOD           N                 F
 # 
 # SRVR_ADDR         Y (If BACKUP)
 # SRVR_DEST_DIR     Y (If BACKUP)
