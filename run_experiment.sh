@@ -5,6 +5,11 @@ log_prefix=${2:-train}
 
 [ -f $exp ] && source $exp
 
+fix_experiment_path() {
+  local local_exp=$(readlink -f $1)
+  echo $local_exp | sed -e 's/.*squad-experiments/\/workspace/'
+}
+
 if [[ -z $BACKUP && $BACKUP -eq 1 ]]; then
   [[ -z SRVR_ADDR || -z SRVR_DEST_DIR ]] && (echo 'No backup space'; exit 1)
 fi
@@ -25,7 +30,7 @@ else
   { time nvidia-docker run \
     -v `pwd`:/workspace \
     nvcr.io/nvidia/tensorflow:19.02-py3 \
-    /workspace/run_squad.sh $exp \
+    /workspace/run_squad.sh $(fix_experiment_path $exp) \
     2>&1 \
     | tee "${OUTPUT_DIR}/${log_prefix}.log"; \
   } 2>"${OUTPUT_DIR}/${log_prefix}.run_time"

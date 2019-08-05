@@ -74,6 +74,7 @@ for exp in ${experiments[@]}; do
       if [[ ! -z RUN_AFTER_STEP ]]; then
         for run_after_exp in ${RUN_AFTER_STEP}; do
           source $run_after_exp
+          [[ ! -d $OUTPUT_DIR ]] && mkdir -p $OUTPUT_DIR
           ./run_experiment.sh $run_after_exp
           if [[ $? -ne 0 ]]; then
             exit $?
