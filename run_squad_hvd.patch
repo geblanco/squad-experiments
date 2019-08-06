@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..1d0ac69 100644
+index 1fb44fe..cb57900 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -52,6 +52,9 @@ flags.DEFINE_string(
@@ -559,7 +559,7 @@ index 1fb44fe..1d0ac69 100644
  
 +    # output from horovod
 +    if hvd.rank() > 0:
-+      tf.gfile.DeleteRecursively(os.path.join(FLAGS.output_dir, str(hvd.rank())))
++      tf.gfile.DeleteRecursively(FLAGS.output_dir)
 +
    # print("Total Training Time: " + str(end_train - start_train) + " seconds.")
  
