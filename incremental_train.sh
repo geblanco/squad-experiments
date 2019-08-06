@@ -31,6 +31,7 @@ set -e
 
 experiments=($@)
 for exp in ${experiments[@]}; do
+  exp_name=$(dirname $exp)
   source $exp
   # folders to save all predictions (small folder) and
   # models with predictions (big folder) 
@@ -45,6 +46,7 @@ for exp in ${experiments[@]}; do
     continue
   fi
   for step in $(seq $N_STEPS); do
+    echo "############ $exp_name - step $step ############"
     #### sample dataset and run experiment
       echo "Sampling $(basename $TRAIN_FILE)"
       python3 scripts/sample_dataset.py -d $SOURCE_DATASET_FILE -o $TRAIN_FILE -s $SAMPLE_SIZE
@@ -68,11 +70,11 @@ for exp in ${experiments[@]}; do
         cp "$OUTPUT_DIR/${out_file}.json" "$AVERAGES_DIR/${out_file}_${SAMPLE_SIZE}_${step}.json"
         cp "$OUTPUT_DIR/${out_file}.json" "$STEP_MODELS_DIR/${out_file}_${SAMPLE_SIZE}_${step}.json"
       done
-      unset N_STEPS SAMPLE_SIZE
       clean_data_dir $OUTPUT_DIR
     #### predict on other datasets
       if [[ ! -z RUN_AFTER_STEP ]]; then
-        for run_after_exp in ${RUN_AFTER_STEP}; do
+        for run_after_exp in ${RUN_AFTER_STEP[@]}; do
+          echo "############ $exp_name - run after $(dirname $run_after_exp) ############"
           source $run_after_exp
           [[ ! -d $OUTPUT_DIR ]] && mkdir -p $OUTPUT_DIR
           ./run_experiment.sh $run_after_exp
@@ -88,8 +90,10 @@ for exp in ${experiments[@]}; do
   done
   #### backup results
     remote_dest=$(basename `dirname $OUTPUT_DIR`)
-    echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
+    echo "Backup $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
     rsync -avrzP $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
+    echo "Backup $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
+    rsync -avrzP $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
     # we put `set -e` so exit on error should be enusured, but just in case, to avoid loosing models...
     if [[ $? -ne 0 ]]; then
       exit $?

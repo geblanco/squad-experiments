@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..869e2e4 100644
+index 1fb44fe..1d0ac69 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -52,6 +52,9 @@ flags.DEFINE_string(
@@ -542,7 +542,7 @@ index 1fb44fe..869e2e4 100644
          seq_length=FLAGS.max_seq_length,
          is_training=False,
          drop_remainder=False)
-@@ -1286,9 +1504,12 @@ def main(_):
+@@ -1286,11 +1504,18 @@ def main(_):
      output_nbest_file = os.path.join(FLAGS.output_dir, "nbest_predictions.json")
      output_null_log_odds_file = os.path.join(FLAGS.output_dir, "null_odds.json")
  
@@ -557,4 +557,10 @@ index 1fb44fe..869e2e4 100644
 +    write_predictions(all_predictions, all_nbest_json, scores_diff_json, output_prediction_file,
                        output_nbest_file, output_null_log_odds_file)
  
++    # output from horovod
++    if hvd.rank() > 0:
++      tf.gfile.DeleteRecursively(os.path.join(FLAGS.output_dir, str(hvd.rank())))
++
    # print("Total Training Time: " + str(end_train - start_train) + " seconds.")
+ 
+ 
