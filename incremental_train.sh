@@ -31,7 +31,7 @@ set -e
 
 experiments=($@)
 for exp in ${experiments[@]}; do
-  exp_name=$(dirname $exp)
+  exp_name=$(basename $exp)
   source $exp
   # folders to save all predictions (small folder) and
   # models with predictions (big folder) 
@@ -74,7 +74,7 @@ for exp in ${experiments[@]}; do
     #### predict on other datasets
       if [[ ! -z RUN_AFTER_STEP ]]; then
         for run_after_exp in ${RUN_AFTER_STEP[@]}; do
-          echo "############ $exp_name - run after $(dirname $run_after_exp) ############"
+          echo "############ $exp_name - run after $(basename $run_after_exp) ############"
           source $run_after_exp
           [[ ! -d $OUTPUT_DIR ]] && mkdir -p $OUTPUT_DIR
           ./run_experiment.sh $run_after_exp
