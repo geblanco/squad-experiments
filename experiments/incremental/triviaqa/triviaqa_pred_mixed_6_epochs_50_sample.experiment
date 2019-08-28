@@ -18,5 +18,5 @@ BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/incremental/triviaqa/${_me%.*}_out
 CHECKPOINT=`pwd`/models/mixed/mixed_6_epochs_model_50_sample.ckpt
 
-TRAIN_FILE=`pwd`/experiments/incremental/triviaqa/${_me%.*}_out
-PREDICT_FILE=`pwd`/experiments/incremental/triviaqa/${_me%.*}_out
+TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
