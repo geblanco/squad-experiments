@@ -2,6 +2,11 @@
 
 dockerize=${1:-0}
 
+if ! hash git unzip wget 2>/dev/null; then
+  echo '"git", "unzip" and "wget" are necessary, install them first'
+  exit 1
+fi
+
 # download bert repo
 git clone https://github.com/lambdal/bert.git
 patch -p1 bert/run_squad.py run_squad.patch
