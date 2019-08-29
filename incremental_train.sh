@@ -28,6 +28,10 @@ copy_model() {
 
 # no errors accepted
 set -e
+if [[ -z $SRVR_HORACIO_ENV ]]; then
+  echo "Unkown backup server!"
+  exit 1
+fi
 
 experiments=($@)
 for exp in ${experiments[@]}; do
