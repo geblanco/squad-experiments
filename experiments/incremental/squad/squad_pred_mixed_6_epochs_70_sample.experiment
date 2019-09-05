@@ -1,9 +1,9 @@
 #!/bin/bash
 
-_me='squad_pred_mixed_6_epochs_80_sample.experiment'
+_me='squad_pred_mixed_6_epochs_70_sample.experiment'
 
 EXP_NAME='SQuAD + TriviaQA + NewsQA 6 Epochs Model'
-META='Predictions of Squad Dataset with a model trained over a subset of 80% mix of SQuAD, TriviaQA and NewsQA datasets for 6 epochs'
+META='Predictions of Squad Dataset with a model trained over a subset of 70% mix of SQuAD, TriviaQA and NewsQA datasets for 6 epochs'
 
 DOCKERIZE=0
 BACKUP=0
@@ -16,7 +16,7 @@ THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/incremental/squad/${_me%.*}_out
-CHECKPOINT=`pwd`/models/mixed/mixed_6_epochs_model_80_sample.ckpt
+CHECKPOINT=`pwd`/models/mixed/mixed_6_epochs_model_70_sample.ckpt
 
 TRAIN_FILE=`pwd`/squad/train-v2.0.json
 PREDICT_FILE=`pwd`/squad/dev-v2.0.json
