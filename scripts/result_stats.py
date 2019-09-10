@@ -34,7 +34,6 @@ def get_empty_answers_from_dataset(dataset):
   return empty_ids
 
 def main():
-  
   dataset_empty = get_empty_answers_from_dataset(dataset)
   assert(len(predictions) == len(scores))
 

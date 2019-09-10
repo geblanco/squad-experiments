@@ -8,6 +8,8 @@ args = parser.parse_args()
 
 random.seed(42)
 
+print('Merging {} datasets'.format(', '.join(args.datasets)))
+
 output_dataset = []
 # import data
 for data_dir in args.datasets:
