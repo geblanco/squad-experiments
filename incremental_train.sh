@@ -76,6 +76,7 @@ for exp in ${experiments[@]}; do
       done
       clean_data_dir $OUTPUT_DIR
     #### predict on other datasets
+    ## Attention! No backup of run after steps!
       if [[ ! -z RUN_AFTER_STEP ]]; then
         for run_after_exp in ${RUN_AFTER_STEP[@]}; do
           echo "############ $exp_name - run after $(basename $run_after_exp) ############"
