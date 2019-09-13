@@ -1,5 +1,5 @@
 diff --git a/run_squad.py b/run_squad.py
-index edd4c3e..af341cf 100644
+index edd4c3e..08e10cf 100644
 --- a/run_squad.py
 +++ b/run_squad.py
 @@ -50,6 +50,9 @@ flags.DEFINE_string(
@@ -12,7 +12,44 @@ index edd4c3e..af341cf 100644
  flags.DEFINE_string(
      "predict_file", None,
      "SQuAD json for predictions. E.g., dev-v1.1.json or test-v1.1.json")
-@@ -284,7 +287,7 @@ def read_squad_examples(input_file, is_training):
+@@ -224,6 +227,36 @@ class InputFeatures(object):
+     self.is_impossible = is_impossible
+ 
+ 
++class HistoricMetric(object):
++  def __init__(self, mode='min', patience=0):
++    super(HistoricMetric, self).__init__()
++    if mode not in ['min', 'max']:
++      tf.logging.info('HistoricMetric mode %s is unknown, fall back to min'
++        'mode', mode)
++      mode = 'min'
++    self.patience = patience
++    self.mode = mode
++    self.wait = 0
++    self.best = math.inf if mode == 'min' else -math.inf
++    self.op = self._greater if mode == 'max' else self._less
++
++  def _greater(self, new_value, old_value):
++    return new_value > old_value
++
++  def _less(self, new_value, old_value):
++    return new_value < old_value
++
++  def update(self, new_value):
++    if self.op(new_value, self.best):
++      self.best = new_value
++      self.wait = 0
++    else:
++      self.wait +=1
++
++  def should_stop(self):
++    return self.wait >= self.patience
++
++
+ def read_squad_examples(input_file, is_training):
+   """Read a SQuAD json file into a list of SquadExample."""
+   with tf.gfile.Open(input_file, "r") as reader:
+@@ -284,7 +317,7 @@ def read_squad_examples(input_file, is_training):
                  doc_tokens[start_position:(end_position + 1)])
              cleaned_answer_text = " ".join(
                  tokenization.whitespace_tokenize(orig_answer_text))
@@ -21,7 +58,7 @@ index edd4c3e..af341cf 100644
                tf.logging.warning("Could not find answer: '%s' vs. '%s'",
                                   actual_text, cleaned_answer_text)
                continue
-@@ -427,31 +430,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
+@@ -427,31 +460,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
          start_position = 0
          end_position = 0
  
@@ -78,7 +115,7 @@ index edd4c3e..af341cf 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
-@@ -657,7 +660,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -657,7 +690,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
        start_loss = compute_loss(start_logits, start_positions)
        end_loss = compute_loss(end_logits, end_positions)
  
@@ -91,7 +128,7 @@ index edd4c3e..af341cf 100644
  
        train_op = optimization.create_optimizer(
            total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-@@ -666,7 +673,9 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -666,7 +703,9 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
            mode=mode,
            loss=total_loss,
            train_op=train_op,
@@ -102,7 +139,7 @@ index edd4c3e..af341cf 100644
      elif mode == tf.estimator.ModeKeys.PREDICT:
        predictions = {
            "unique_ids": unique_ids,
-@@ -684,7 +693,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -684,7 +723,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
    return model_fn
  
  
@@ -111,7 +148,7 @@ index edd4c3e..af341cf 100644
    """Creates an `input_fn` closure to be passed to TPUEstimator."""
  
    name_to_features = {
-@@ -723,6 +732,9 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+@@ -723,6 +762,9 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
        d = d.repeat()
        d = d.shuffle(buffer_size=100)
  
@@ -121,17 +158,13 @@ index edd4c3e..af341cf 100644
      d = d.apply(
          tf.contrib.data.map_and_batch(
              lambda record: _decode_record(record, name_to_features),
-@@ -733,17 +745,123 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+@@ -733,17 +775,98 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
  
    return input_fn
  
-+def should_stop_fn_builder(estimator, val_input_fn, val_examples, val_features, max_steps_without_decrease):
++def should_stop_fn_builder(estimator, val_input_fn, val_examples, val_features, patience):
 +
-+  stats = {
-+    'last_stat': 100000,
-+    'direction': -1,
-+    'steps': 0
-+  }
++  stats = HistoricMetric(mode='max', patience=patience)
 +
 +  import re
 +  def normalize_answer(s):
@@ -170,33 +203,13 @@ index edd4c3e..af341cf 100644
 +    f1 = (2 * precision * recall) / (precision + recall)
 +    return f1
 +
-+  def update_stats(old_stats, acc_val):
-+    diff_val = old_stats['last_stat'] - acc_val
-+    if new_dir > 0:
-+      # decreasing
-+      new_dir = -1
-+    elif diff_val < 0:
-+      # increasing
-+      new_dir = 1
-+    else:
-+      # constant
-+      new_dir = 0
-+    
-+    return {
-+      'last_stat': acc_val,
-+      'direction': new_dir,
-+      'steps': old_stats['steps'] +1
-+    }
-+
 +  def should_stop():
-+    sampled_ids = []
 +    all_results = []
 +    for result in estimator.predict(
 +        val_input_fn, yield_single_examples=True):
 +      unique_id = int(result["unique_ids"])
 +      start_logits = [float(x) for x in result["start_logits"].flat]
 +      end_logits = [float(x) for x in result["end_logits"].flat]
-+      sampled_ids.append(unique_id)
 +      all_results.append(
 +          RawResult(
 +              unique_id=unique_id,
@@ -212,8 +225,8 @@ index edd4c3e..af341cf 100644
 +        sampled_val_features.append(feature)
 +
 +    all_predictions, all_nbest_json, scores_diff_json = create_predictions(
-+        sampled_val_examples,
-+        sampled_val_features,
++        val_examples,
++        val_features,
 +        all_results,
 +        FLAGS.n_best_size,
 +        FLAGS.max_answer_length,
@@ -229,10 +242,9 @@ index edd4c3e..af341cf 100644
 +      acc.append(f1_score)
 +
 +    acc_val = sum(acc) / len(val_examples)
-+    stats = update_stats(stats, acc_val)
++    stats.update(acc_val)
 +
-+    if stats['steps'] >= max_steps_without_decrease:
-+      return True
++    return stats.should_stop()
 +
 +  return should_stop
  
@@ -251,7 +263,7 @@ index edd4c3e..af341cf 100644
  
    example_index_to_features = collections.defaultdict(list)
    for feature in all_features:
-@@ -903,9 +1021,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -903,9 +1026,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
@@ -269,7 +281,7 @@ index edd4c3e..af341cf 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
-@@ -913,6 +1037,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -913,6 +1042,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
  
      all_nbest_json[example.qas_id] = nbest_json
  
@@ -287,7 +299,7 @@ index edd4c3e..af341cf 100644
    with tf.gfile.GFile(output_prediction_file, "w") as writer:
      writer.write(json.dumps(all_predictions, indent=4) + "\n")
  
-@@ -1122,6 +1257,108 @@ def validate_flags_or_throw(bert_config):
+@@ -1122,6 +1262,108 @@ def validate_flags_or_throw(bert_config):
          "The max_seq_length (%d) must be greater than max_query_length "
          "(%d) + 3" % (FLAGS.max_seq_length, FLAGS.max_query_length))
  
@@ -396,7 +408,7 @@ index edd4c3e..af341cf 100644
  
  def main(_):
    tf.logging.set_verbosity(tf.logging.INFO)
-@@ -1151,20 +1388,12 @@ def main(_):
+@@ -1151,20 +1393,12 @@ def main(_):
            num_shards=FLAGS.num_tpu_cores,
            per_host_input_for_training=is_per_host))
  
@@ -421,7 +433,7 @@ index edd4c3e..af341cf 100644
  
    model_fn = model_fn_builder(
        bert_config=bert_config,
-@@ -1185,67 +1414,64 @@ def main(_):
+@@ -1185,67 +1419,64 @@ def main(_):
        predict_batch_size=FLAGS.predict_batch_size)
  
    if FLAGS.do_train:
@@ -479,13 +491,13 @@ index edd4c3e..af341cf 100644
 +        take=sample_size)
 +
 +      should_stop_fn = should_stop_fn_builder(estimator, val_input_fn, val_examples,
-+                                      val_features, max_steps_without_decrease=10)
++                                      val_features, patience=4)
 +
 +      early_stopping = tf.estimator.experimental.make_early_stopping_hook(
 +        estimator=estimator,
 +        should_stop_fn=should_stop_fn,
 +        run_every_secs=None,
-+        run_every_steps=100
++        run_every_steps=1
 +      )
 +      hooks.append(early_stopping)
 +
@@ -529,7 +541,7 @@ index edd4c3e..af341cf 100644
          seq_length=FLAGS.max_seq_length,
          is_training=False,
          drop_remainder=False)
-@@ -1270,11 +1496,13 @@ def main(_):
+@@ -1270,11 +1501,13 @@ def main(_):
      output_nbest_file = os.path.join(FLAGS.output_dir, "nbest_predictions.json")
      output_null_log_odds_file = os.path.join(FLAGS.output_dir, "null_odds.json")
  
