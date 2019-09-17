@@ -89,6 +89,10 @@ for exp in ${experiments[@]}; do
           for out_file in nbest_predictions null_odds predictions; do
             cp "$OUTPUT_DIR/${out_file}.json" "$OUTPUT_DIR/${out_file}_${SAMPLE_SIZE}_${step}.json"
           done
+          remote_dest=$(basename `dirname $OUTPUT_DIR`)
+          echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/"
+          rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/
+          rsync
         done
       fi
       source $exp
