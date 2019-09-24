@@ -92,7 +92,6 @@ for exp in ${experiments[@]}; do
           remote_dest=$(basename `dirname $OUTPUT_DIR`)
           echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/"
           rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/
-          rsync
         done
       fi
       source $exp
