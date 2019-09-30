@@ -30,6 +30,7 @@ copy_model() {
 # no errors accepted
 set -e
 
+echo "###### Starting experiment $(date)"
 experiments=($@)
 for exp in ${experiments[@]}; do
   source $exp
@@ -49,3 +50,6 @@ for exp in ${experiments[@]}; do
     unset DROP_MODEL
   fi
 done
+echo "###### End of  experiment $(date)"
+echo "######################################"
+
