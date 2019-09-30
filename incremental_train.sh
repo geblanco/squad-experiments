@@ -5,7 +5,7 @@ clean_data_dir() {
   for dir in $@; do
     if [[ -d $dir ]]; then
       echo "Delete $dir"
-      rm -rf $dir
+      sudo rm -rf $dir
     fi
     echo "Create $dir"
     mkdir -p $dir
@@ -33,6 +33,7 @@ if [[ -z $SRVR_HORACIO_ENV ]]; then
   exit 1
 fi
 
+echo "###### Starting experiment $(date)"
 experiments=($@)
 for exp in ${experiments[@]}; do
   exp_name=$(basename $exp)
@@ -109,3 +110,5 @@ for exp in ${experiments[@]}; do
     # delete to save space
     clean_data_dir $AVERAGES_DIR $STEP_MODELS_DIR
 done
+echo "###### End of  experiment $(date)"
+echo "######################################"
