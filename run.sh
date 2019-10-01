@@ -41,6 +41,9 @@ for exp in ${experiments[@]}; do
   if [[ $? -ne 0 ]]; then
     exit $?
   fi
+  remote_dest=$(basename `dirname $OUTPUT_DIR`)
+  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
+  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
   if [[ "$TRAIN" == "True" && ! -z $DROP_MODEL ]]; then
     drop_base=$(dirname $DROP_MODEL)
     drop_name=$(basename $DROP_MODEL)
@@ -50,6 +53,8 @@ for exp in ${experiments[@]}; do
     unset DROP_MODEL
   fi
 done
-echo "###### End of  experiment $(date)"
+echo "###### End of experiment $(date)"
+echo "###### Copying models..."
+echo "Backup models $SRVR_HORACIO_ENV:/data/lihlith/"
+rsync -avrzP models $SRVR_HORACIO_ENV:/data/lihlith/
 echo "######################################"
-
