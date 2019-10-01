@@ -32,5 +32,6 @@ for idx, split in enumerate(args.proportions):
     amount = len(dataset)
   split_name = ('split_{}'.format(idx, amount) if args.names is None else args.names[idx]) + '.json'
   path = os.path.join(args.output_dir, split_name)
+  print('Dropping split with proportion {} in {}'.format(split, path))
   json.dump(fp=open(path, 'w'), obj={ 'version': 'v2.1', 'data': dataset[curr_idx:amount] })
   curr_idx = amount
