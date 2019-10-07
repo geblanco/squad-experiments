@@ -17,7 +17,11 @@ total = sum(args.proportions)
 if (total % 100) != 0:
   raise ValueError('Bad proportions given')
 
-dataset = json.load(open(args.dataset, 'r'))['data']
+dataset = json.load(open(args.dataset, 'r'))
+squad_like = False
+if type(dataset) == dict:
+  dataset = dataset['data']
+  squad_like = True
 dataset_len = len(dataset)
 
 if args.shuffle:
@@ -33,5 +37,8 @@ for idx, split in enumerate(args.proportions):
   split_name = ('split_{}'.format(idx, amount) if args.names is None else args.names[idx]) + '.json'
   path = os.path.join(args.output_dir, split_name)
   print('Dropping split with proportion {} in {}'.format(split, path))
-  json.dump(fp=open(path, 'w'), obj={ 'version': 'v2.1', 'data': dataset[curr_idx:amount] })
+  dump_obj = dataset[curr_idx:amount]
+  if squad_like:
+    dump_obj = { 'version': 'v2.1', 'data': dataset[curr_idx:amount] }
+  json.dump(fp=open(path, 'w'), obj=dump_obj)
   curr_idx = amount

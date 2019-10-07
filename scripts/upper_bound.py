@@ -29,7 +29,6 @@ def parse_args():
   parser.add_argument('--output-dataset', default=None, type=str,
     dest='output_dataset', help='output file to drop the dataset')
 
-  args = parser.parse_args()
   if len(sys.argv) == 1:
     parser.print_help()
     sys.exit(1)
@@ -44,12 +43,15 @@ def make_upper_bound_preds(scores):
       raise ValueError('Different question ids', ids, score_set)
     correct_index = [idx for idx, value in enumerate(score_set) if value == 1]
     if len(correct_index) > 0:
-      preds.append(dict(id=ids[0], correct=correct_index[0]))
+      correct_index = correct_index[0]
+    else:
+      correct_index = -1
+    preds.append(dict(id=ids[0], correct=correct_index))
   return preds
 
 def calculate_upper_bound(scores):
   upper_bound_preds = make_upper_bound_preds(scores)
-  total_correct = len(upper_bound_preds)
+  total_correct = len([e for e in upper_bound_preds if e['correct'] != -1])
   return 100.0 * (total_correct / len(scores[0]))
 
 def get_data_from_dir(data_dir, filename, filter_dirs=None):

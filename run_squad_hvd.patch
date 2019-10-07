@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..9dfdbca 100644
+index 1fb44fe..b597888 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -52,6 +52,9 @@ flags.DEFINE_string(
@@ -12,7 +12,7 @@ index 1fb44fe..9dfdbca 100644
  flags.DEFINE_string(
      "predict_file", None,
      "SQuAD json for predictions. E.g., dev-v1.1.json or test-v1.1.json")
-@@ -226,6 +229,36 @@ class InputFeatures(object):
+@@ -226,6 +229,45 @@ class InputFeatures(object):
      self.is_impossible = is_impossible
  
  
@@ -45,11 +45,20 @@ index 1fb44fe..9dfdbca 100644
 +  def should_stop(self):
 +    return self.wait >= self.patience
 +
++  def __str__(self):
++    return self.__repr__()
++
++  def __repr__(self):
++    s = 'Stats: '
++    s +='mode={}, best={}, wait={}, patience={}'.format(
++      self.mode, self.best, self.wait, self.patience)
++    return s
++
 +
  def read_squad_examples(input_file, is_training):
    """Read a SQuAD json file into a list of SquadExample."""
    with tf.gfile.Open(input_file, "r") as reader:
-@@ -286,7 +319,7 @@ def read_squad_examples(input_file, is_training):
+@@ -286,7 +328,7 @@ def read_squad_examples(input_file, is_training):
                  doc_tokens[start_position:(end_position + 1)])
              cleaned_answer_text = " ".join(
                  tokenization.whitespace_tokenize(orig_answer_text))
@@ -58,7 +67,7 @@ index 1fb44fe..9dfdbca 100644
                tf.logging.warning("Could not find answer: '%s' vs. '%s'",
                                   actual_text, cleaned_answer_text)
                continue
-@@ -429,31 +462,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
+@@ -429,31 +471,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
          start_position = 0
          end_position = 0
  
@@ -115,7 +124,7 @@ index 1fb44fe..9dfdbca 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
-@@ -659,7 +692,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -659,7 +701,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
        start_loss = compute_loss(start_logits, start_positions)
        end_loss = compute_loss(end_logits, end_positions)
  
@@ -128,7 +137,7 @@ index 1fb44fe..9dfdbca 100644
  
        train_op = optimization_hvd.create_optimizer(
            total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-@@ -668,7 +705,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -668,7 +714,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
            mode=mode,
            loss=total_loss,
            train_op=train_op,
@@ -138,7 +147,7 @@ index 1fb44fe..9dfdbca 100644
      elif mode == tf.estimator.ModeKeys.PREDICT:
        predictions = {
            "unique_ids": unique_ids,
-@@ -686,7 +724,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -686,7 +733,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
    return model_fn
  
  
@@ -147,7 +156,7 @@ index 1fb44fe..9dfdbca 100644
    """Creates an `input_fn` closure to be passed to TPUEstimator."""
  
    name_to_features = {
-@@ -731,21 +769,105 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+@@ -731,21 +778,109 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
              batch_size=batch_size,
              drop_remainder=drop_remainder))
  
@@ -200,6 +209,7 @@ index 1fb44fe..9dfdbca 100644
 +    return f1
 +
 +  def should_stop():
++    tf.logging.info("***** Running validation *****")
 +    all_results = []
 +    for result in estimator.predict(
 +        val_input_fn, yield_single_examples=True):
@@ -240,6 +250,9 @@ index 1fb44fe..9dfdbca 100644
 +    acc_val = sum(acc) / len(val_examples)
 +    stats.update(acc_val)
 +
++    tf.logging.info("   Should stop %s" % str(stats))
++    tf.logging.info("***** End of validation *****")
++
 +    return stats.should_stop()
 +
 +  return should_stop
@@ -259,7 +272,7 @@ index 1fb44fe..9dfdbca 100644
  
    example_index_to_features = collections.defaultdict(list)
    for feature in all_features:
-@@ -905,9 +1027,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -905,9 +1040,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
@@ -277,7 +290,7 @@ index 1fb44fe..9dfdbca 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
-@@ -915,6 +1043,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -915,6 +1056,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
  
      all_nbest_json[example.qas_id] = nbest_json
  
@@ -295,7 +308,7 @@ index 1fb44fe..9dfdbca 100644
    with tf.gfile.GFile(output_prediction_file, "w") as writer:
      writer.write(json.dumps(all_predictions, indent=4) + "\n")
  
-@@ -925,7 +1064,6 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -925,7 +1077,6 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
      with tf.gfile.GFile(output_null_log_odds_file, "w") as writer:
        writer.write(json.dumps(scores_diff_json, indent=4) + "\n")
  
@@ -303,7 +316,7 @@ index 1fb44fe..9dfdbca 100644
  def get_final_text(pred_text, orig_text, do_lower_case):
    """Project the tokenized prediction back to the original text."""
  
-@@ -1021,7 +1159,6 @@ def get_final_text(pred_text, orig_text, do_lower_case):
+@@ -1021,7 +1172,6 @@ def get_final_text(pred_text, orig_text, do_lower_case):
    output_text = orig_text[orig_start_position:(orig_end_position + 1)]
    return output_text
  
@@ -311,7 +324,7 @@ index 1fb44fe..9dfdbca 100644
  def _get_best_indexes(logits, n_best_size):
    """Get the n-best logits from a list."""
    index_and_score = sorted(enumerate(logits), key=lambda x: x[1], reverse=True)
-@@ -1124,6 +1261,93 @@ def validate_flags_or_throw(bert_config):
+@@ -1124,6 +1274,93 @@ def validate_flags_or_throw(bert_config):
          "The max_seq_length (%d) must be greater than max_query_length "
          "(%d) + 3" % (FLAGS.max_seq_length, FLAGS.max_query_length))
  
@@ -399,13 +412,13 @@ index 1fb44fe..9dfdbca 100644
 +
 +  eval_filename = os.path.join(FLAGS.output_dir, "eval.tf_record")
 +  eval_examples, eval_features = write_examples_as_features(tokenizer, FLAGS.predict_file,
-+                                  eval_filename, is_training=False, shuffle=False)
++                                  eval_filename, is_training=True, shuffle=False)
 +
 +  return eval_examples, eval_features, eval_filename
  
  def main(_):
    hvd.init()
-@@ -1162,22 +1386,12 @@ def main(_):
+@@ -1162,22 +1399,12 @@ def main(_):
        log_step_count_steps=25,
        session_config=config)
  
@@ -432,7 +445,7 @@ index 1fb44fe..9dfdbca 100644
  
    model_fn = model_fn_builder(
        bert_config=bert_config,
-@@ -1198,70 +1412,64 @@ def main(_):
+@@ -1198,70 +1425,64 @@ def main(_):
        predict_batch_size=FLAGS.predict_batch_size)
  
    if FLAGS.do_train:
@@ -539,7 +552,7 @@ index 1fb44fe..9dfdbca 100644
          seq_length=FLAGS.max_seq_length,
          is_training=False,
          drop_remainder=False)
-@@ -1286,11 +1494,18 @@ def main(_):
+@@ -1286,11 +1507,18 @@ def main(_):
      output_nbest_file = os.path.join(FLAGS.output_dir, "nbest_predictions.json")
      output_null_log_odds_file = os.path.join(FLAGS.output_dir, "null_odds.json")
  
@@ -561,4 +574,3 @@ index 1fb44fe..9dfdbca 100644
    # print("Total Training Time: " + str(end_train - start_train) + " seconds.")
  
  
-
