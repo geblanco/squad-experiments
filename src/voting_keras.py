@@ -1,10 +1,11 @@
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from keras import preprocessing
-from keras.regularizers import l2
-from keras.models import Sequential
 from keras.layers import Embedding, Bidirectional, LSTM, Dense
+from keras.regularizers import l2
+from keras.optimizers import Adam
+from keras.models import Sequential
+from keras import preprocessing
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -169,8 +170,8 @@ def build_model(embedding_matrix, model_params):
   model.layers[0].set_weights([embedding_matrix])
   model.layers[0].trainable = False
 
-  rms = RMSprop(lr=model_params.lrate)
-  model.compile(loss='binary_crossentropy', optimizer=rms, metrics=['accuracy'])
+  adam = Adam(lr=model_params.lrate)
+  model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
   return model
 
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
