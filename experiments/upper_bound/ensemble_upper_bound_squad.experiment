@@ -24,7 +24,7 @@ SRVR_ADDR=$SRVR_HORACIO_ENV
 SRVR_DEST_DIR=/data/lihlith/upper_bound_experiments
  
 TRAIN_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-train-v1.0.json
-VALIDATION_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-dev-v1.0.json
+VALIDATE_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-dev-v1.0.json
 PREDICT_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-test-v1.0.json
 EMBEDDINGS_FILE=`pwd`/experiments/upper_bound/data/glove.6B.300d.txt.bz2
 

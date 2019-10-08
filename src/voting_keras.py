@@ -7,10 +7,13 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras import preprocessing
 
+from typing import NamedTuple
+
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 import argparse
+import json
 import bz2
 import sys
 import os
@@ -22,38 +25,50 @@ tf.set_random_seed(2)
 FLAGS = None
 
 class ModelParams(NamedTuple):
-  embedding_size: int = 0
+  embeddings_size: int = 0
   max_words: int = 0
   lstm_hidden_size: int = 0
   regularization: float = 0.0
   dropout: float = 0.0
   lrate: float = 0.0
 
+class Example(NamedTuple):
+  id: int = 0
+  question_text: str = ''
+  context_text: str = ''
+  doc_tokens: list = []
+  answers: list = []
+  correct: int = -1
+
 def parse_args():
+  parser = argparse.ArgumentParser()
   parser.add_argument('--train_file', default=None, required=True, type=str,
     help='Json file for training. E.g., train-ensemble-qa-v1.0.json')
-  parser.add_argument('--validation_file', default=None, required=True, type=str,
+  parser.add_argument('--validate_file', default=None, required=True, type=str,
       help='Json file for validation. E.g., dev-ensemble-qa-v1.0.json')
   parser.add_argument('--predict_file', default=None, required=True, type=str,
       help='Json for predictions. E.g., test-ensemble-qa-v1.1.json')
   parser.add_argument('--do_train', default=False, help='Whether to run training.')
   parser.add_argument('--do_predict', default=False, help='Whether to run eval on the test set.')
-  parser.add_argument('--batch_size', default=128, help='Total batch size for training.')
-  parser.add_argument('--learning_rate', default=5e-5, help='The initial learning rate for Adam.')
-  parser.add_argument('--num_train_epochs', default=20, help='Total number of training epochs to perform.')
+  parser.add_argument('--batch_size', default=128, type=int,
+      help='Total batch size for training.')
+  parser.add_argument('--learning_rate', default=5e-5, type=float,
+      help='The initial learning rate for Adam.')
+  parser.add_argument('--num_train_epochs', default=20, type=int,
+      help='Total number of training epochs to perform.')
   parser.add_argument('--output_dir', default=None, required=True,
       help='The output directory where figures and model will be written.')
-  parser.add_argument('--max_seq_length', default=384,
+  parser.add_argument('--max_seq_length', default=384, type=int,
       help='The maximum total input sequence length after tokenization. '
       'Sequences longer than this will be truncated, and sequences shorter '
       'than this will be padded.')
-  parser.add_argument('--max_words_length', default=10000, required=True,
+  parser.add_argument('--max_words_length', default=10000, type=int, 
       help='The maximum number of words accepted in the dictionary.')
-  parser.add_argument('--lstm_hidden_size', default=128, required=True,
+  parser.add_argument('--lstm_hidden_size', default=128, type=int, required=True,
       help='The size of the internal representation on lstm layers.')
-  parser.add_argument('--embeddings_file', default=None, required=True, type=str, 
+  parser.add_argument('--embeddings_file', default=None, type=str, required=True, 
       help='Embeddings file to load on the model. E.g., glove.6B.50d.txt.bz2')
-  parser.add_argument('--embeddings_size', default=50, required=True, type=int, 
+  parser.add_argument('--embeddings_size', default=50, type=int, required=True, 
       help='Embeddings file to load on the model. E.g., glove.6B.50d.txt.bz2')
   if len(sys.argv) < 2:
     parser.print_help()
@@ -67,6 +82,7 @@ def is_whitespace(c):
 
 def get_doc_tokens(text):
   doc_tokens = []
+  prev_is_whitespace = True
   for c in text:
     if is_whitespace(c):
       prev_is_whitespace = True
@@ -97,11 +113,11 @@ def read_examples(input_file, is_training):
 
   return examples
 
-def get_text_and_label_from_examples(examples):
+def get_texts_and_labels_from_examples(examples):
   texts = []
   labels = []
   for example in examples:
-    text = example.context + example.question + ' '.join(example.answers)
+    text = example.context_text + example.question_text + ' '.join(example.answers)
     texts.append(text)
     labels.append(example.correct)
   return texts, labels
@@ -120,7 +136,7 @@ def get_padded_sequences(tokenizer, texts, max_seq):
   return padded
 
 def prepare_set(examples, max_words, max_seq, tokenizer, fit=False):
-  texts, labels = get_text_and_label_from_examples(examples)
+  texts, labels = get_texts_and_labels_from_examples(examples)
   if fit:
     # Build the word index (dictionary)
     tokenizer.fit_on_texts(texts)
@@ -128,7 +144,7 @@ def prepare_set(examples, max_words, max_seq, tokenizer, fit=False):
   # Get data as a lists of integers and pad, 2D integer tensor of shape `(samples, max_seq)`
   x = get_padded_sequences(tokenizer, texts, max_seq)
 
-  return x, labels, tokenizer
+  return x, labels
 
 def parse_embeddings(file):
   embeddings = {}
@@ -158,9 +174,9 @@ def build_embedding_matrix(file, threshold, dim, word_index):
 def build_model(embedding_matrix, model_params):
   model = Sequential()
   # 1. Define and add Embedding layer to the model
-  model.add(Embedding(model_params.max_words, model_params.embedding_size, mask_zero=True))
+  model.add(Embedding(model_params.max_words, model_params.embeddings_size, mask_zero=True))
   # After the Embedding layer, 
-  # our activations have shape `(batch_size, max_seq, embedding_size)`.
+  # our activations have shape `(batch_size, max_seq, embeddings_size)`.
   # 2. Define and add LSTM layer to the model.
   model.add(LSTM(model_params.lstm_hidden_size, kernel_regularizer=l2(model_params.regularization)))
   # 3. Avoid overfitting with dropout
@@ -223,16 +239,16 @@ def main():
   max_words = FLAGS.max_words_length
   max_seq = FLAGS.max_seq_length
   lstm_hidden_size = FLAGS.lstm_hidden_size
-  epochs = FLAGS.epochs
+  epochs = FLAGS.num_train_epochs
   batch_size = FLAGS.batch_size
-  embedding_size = FLAGS.embeddings_size
+  embeddings_size = FLAGS.embeddings_size
 
   # Create a tokenize that takes the 10000 most common words
   tokenizer = preprocessing.text.Tokenizer(num_words=max_words)
 
   train_examples = read_examples(FLAGS.train_file, is_training=True)
-  dev_examples = read_examples(FLAGS.validation_file, is_training=True)
-  test_examples = read_examples(FLAGS.prediction_file, is_training=False)
+  dev_examples = read_examples(FLAGS.validate_file, is_training=True)
+  test_examples = read_examples(FLAGS.predict_file, is_training=False)
 
   shuffle(train_examples)
   shuffle(dev_examples)
@@ -249,12 +265,12 @@ def main():
   # Read input embeddings
   word_index = tokenizer.word_index
   with bz2.open(FLAGS.embeddings_file) as embsfile:
-    embedding_matrix = build_embedding_matrix(embsfile, threshold=max_words, word_index=word_index)
+    embedding_matrix = build_embedding_matrix(embsfile, threshold=max_words, dim=embeddings_size, word_index=word_index)
 
   print('Embeddings shape: {}'.format(embedding_matrix.shape))
 
   model_params = ModelParams(
-      embedding_size=50,
+      embeddings_size=embeddings_size,
       max_words=max_words,
       lstm_hidden_size=lstm_hidden_size,
       regularization=0.01,

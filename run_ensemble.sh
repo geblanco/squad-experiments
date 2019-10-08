@@ -26,7 +26,7 @@ pip install -r requirements.txt
 # --max_words_length
 python voting_keras.py \
   --train_file=$TRAIN_FILE \
-  --validation_file=$VALIDATION_FILE \
+  --validate_file=$VALIDATE_FILE \
   --predict_file=$PREDICT_FILE \
   --do_train=$TRAIN \
   --do_predict=True \
