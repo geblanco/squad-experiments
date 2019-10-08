@@ -1,0 +1,30 @@
+#!/bin/bash 
+ 
+_me='ensemble_upper_bound_squad.experiment' 
+ 
+EXP_SCRIPT=`pwd`/run_ensemble.sh
+EXP_NAME='ensemble-squad' 
+META='Ensemble learning for upper bound on squad' 
+ 
+DOCKERIZE=1 
+BACKUP=1 
+ 
+TRAIN=True
+
+# Model parameters
+BATCH_SIZE=128
+SEQ_LENGTH=384
+TRAIN_EPOCHS=40
+EMBEDDINGS_SIZE=300
+LSTM_HIDDEN_SIZE=128
+LEARNING_RATE=0.01
+ 
+OUTPUT_DIR=`pwd`/experiments/upper_bound/${_me%.*}_out 
+SRVR_ADDR=$SRVR_HORACIO_ENV
+SRVR_DEST_DIR=/data/lihlith/upper_bound_experiments
+ 
+TRAIN_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-train-v1.0.json
+VALIDATION_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-dev-v1.0.json
+PREDICT_FILE=`pwd`/experiments/upper_bound/data/ensemble-upper-bound-test-v1.0.json
+EMBEDDINGS_FILE=`pwd`/experiments/upper_bound/data/glove.6B.300d.txt.bz2
+

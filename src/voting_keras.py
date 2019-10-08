@@ -53,7 +53,8 @@ def parse_args():
       help='The size of the internal representation on lstm layers.')
   parser.add_argument('--embeddings_file', default=None, required=True, type=str, 
       help='Embeddings file to load on the model. E.g., glove.6B.50d.txt.bz2')
-  
+  parser.add_argument('--embeddings_size', default=50, required=True, type=int, 
+      help='Embeddings file to load on the model. E.g., glove.6B.50d.txt.bz2')
   if len(sys.argv) < 2:
     parser.print_help()
     sys.exit(0)
@@ -224,7 +225,7 @@ def main():
   lstm_hidden_size = FLAGS.lstm_hidden_size
   epochs = FLAGS.epochs
   batch_size = FLAGS.batch_size
-  embedding_size = 300
+  embedding_size = FLAGS.embeddings_size
 
   # Create a tokenize that takes the 10000 most common words
   tokenizer = preprocessing.text.Tokenizer(num_words=max_words)
