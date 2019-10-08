@@ -1,9 +1,10 @@
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from keras.layers import Embedding, Bidirectional, LSTM, Dense
-from keras.regularizers import l2
+from keras.layers import Embedding, Bidirectional, LSTM, Dense, Dropout
+from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
+from keras.regularizers import l2
 from keras.models import Sequential
 from keras import preprocessing
 
@@ -178,7 +179,7 @@ def build_model(embedding_matrix, model_params):
   # After the Embedding layer, 
   # our activations have shape `(batch_size, max_seq, embeddings_size)`.
   # 2. Define and add LSTM layer to the model.
-  model.add(LSTM(model_params.lstm_hidden_size, kernel_regularizer=l2(model_params.regularization)))
+  model.add(Bidirectional(LSTM(model_params.lstm_hidden_size, kernel_regularizer=l2(model_params.regularization))))
   # 3. Avoid overfitting with dropout
   model.add(Dropout(model_params.dropout))
   # 4. Define and add Dense layer to the model
