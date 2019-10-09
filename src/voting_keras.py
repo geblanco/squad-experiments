@@ -6,6 +6,7 @@ from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
 from keras.regularizers import l2
 from keras.models import Sequential
+from keras.models import model_from_json
 from keras.utils import multi_gpu_model
 from keras import preprocessing
 
@@ -202,6 +203,7 @@ def build_model(embedding_matrix, model_params):
     model.layers[0].trainable = False
 
     adam = Adam(lr=model_params.lrate)
+    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
 
   parallel_model = multi_gpu_model(model, gpus=get_num_available_gpus())
   parallel_modelmodel.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
@@ -247,6 +249,7 @@ def restore_model(model_structure_file, model_weigths_file):
   loaded_model = model_from_json(loaded_model_json)
   # load weights into new model
   loaded_model.load_weights(model_weigths_file)
+  loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
   return loaded_model
 
 def main():
