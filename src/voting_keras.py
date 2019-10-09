@@ -2,11 +2,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 from keras.layers import Embedding, Bidirectional, LSTM, Dense, Dropout
-from keras.utils.training_utils import multi_gpu_model
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
 from keras.regularizers import l2
 from keras.models import Sequential
+from keras.utils import multi_gpu_model
 from keras import preprocessing
 
 from tensorflow.python.client import device_lib
