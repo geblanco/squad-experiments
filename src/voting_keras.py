@@ -206,7 +206,7 @@ def build_model(embedding_matrix, model_params):
     model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
 
   parallel_model = multi_gpu_model(model, gpus=get_num_available_gpus())
-  parallel_modelmodel.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
+  parallel_model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
   return model, parallel_model
 
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
