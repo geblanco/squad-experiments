@@ -7,10 +7,7 @@ from keras.optimizers import Adam
 from keras.regularizers import l2
 from keras.models import Sequential
 from keras.models import model_from_json
-from keras.utils import multi_gpu_model
 from keras import preprocessing
-
-from tensorflow.python.client import device_lib
 
 from typing import NamedTuple
 
@@ -79,11 +76,6 @@ def parse_args():
     parser.print_help()
     sys.exit(0)
   return parser.parse_args()
-
-def get_num_available_gpus():
-    local_device_protos = device_lib.list_local_devices()
-    return len([x for x in local_device_protos 
-                    if x.device_type == 'GPU'])
 
 def is_whitespace(c):
   if c == ' ' or c == '\t' or c == '\r' or c == '\n' or ord(c) == 0x202F:
@@ -182,32 +174,27 @@ def build_embedding_matrix(file, threshold, dim, word_index):
   return matrix
 
 def build_model(embedding_matrix, model_params):
-  # Build model on CPU and distribute to all gpus, the gradients will come back
-  # to cpu to be calculated
-  with tf.device('/cpu:0'):
-    model = Sequential()
-    # 1. Define and add Embedding layer to the model
-    model.add(Embedding(model_params.max_words, model_params.embeddings_size, 
-        mask_zero=True))
-    # After the Embedding layer, 
-    # our activations have shape `(batch_size, max_seq, embeddings_size)`.
-    # 2. Define and add LSTM layer to the model.
-    model.add(Bidirectional(LSTM(model_params.lstm_hidden_size,
-        kernel_regularizer=l2(model_params.regularization))))
-    # 3. Avoid overfitting with dropout
-    model.add(Dropout(model_params.dropout))
-    # 4. Define and add Dense layer to the model
-    model.add(Dense(1, activation='sigmoid'))
-    model.summary()
-    model.layers[0].set_weights([embedding_matrix])
-    model.layers[0].trainable = False
+  model = Sequential()
+  # 1. Define and add Embedding layer to the model
+  model.add(Embedding(model_params.max_words, model_params.embeddings_size, 
+      mask_zero=True))
+  # After the Embedding layer, 
+  # our activations have shape `(batch_size, max_seq, embeddings_size)`.
+  # 2. Define and add LSTM layer to the model.
+  model.add(Bidirectional(LSTM(model_params.lstm_hidden_size,
+      kernel_regularizer=l2(model_params.regularization))))
+  # 3. Avoid overfitting with dropout
+  model.add(Dropout(model_params.dropout))
+  # 4. Define and add Dense layer to the model
+  model.add(Dense(1, activation='sigmoid'))
+  model.summary()
+  model.layers[0].set_weights([embedding_matrix])
+  model.layers[0].trainable = False
 
-    adam = Adam(lr=model_params.lrate)
-    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
+  adam = Adam(lr=model_params.lrate)
+  model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
 
-  parallel_model = multi_gpu_model(model, gpus=get_num_available_gpus())
-  parallel_model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
-  return model, parallel_model
+  return model
 
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
   early_stop = EarlyStopping(monitor='accuracy', patience=2)
@@ -300,9 +287,8 @@ def main():
   model_weigths_file = os.path.join(FLAGS.output_dir, 'model.h5')
 
   if FLAGS.do_train:
-    model, parallel_model = build_model(embedding_matrix, model_params)
-    # train on parallel model
-    metrics = train_model(parallel_model, epochs, batch_size, x_train, y_train, x_dev, y_dev)
+    model = build_model(embedding_matrix, model_params)
+    metrics = train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev)
     plot_results(metrics.history, ['loss', 'val_loss'], plot_name='model loss',
       out_file=os.path.join(FLAGS.output_dir, 'train_loss.png'))
     plot_results(metrics.history, ['accuracy', 'val_accuracy'], plot_name='model accuracy',
