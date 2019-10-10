@@ -1,11 +1,13 @@
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-from keras.layers import Embedding, Bidirectional, LSTM, Dense, Dropout
+from keras.layers import Input, Embedding, Bidirectional, LSTM, Dense, Dropout
+from keras.layers import RepeatVector, TimeDistributed, Dot, Flatten, Add
+from keras.layers import Activation
+from keras.models import Sequential, Model
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
 from keras.regularizers import l2
-from keras.models import Sequential
 from keras.models import model_from_json
 from keras import preprocessing
 
@@ -33,6 +35,8 @@ class ModelParams(NamedTuple):
   regularization: float = 0.0
   dropout: float = 0.0
   lrate: float = 0.0
+  max_seq: int = 0
+  num_classes: int = 0
 
 class Example(NamedTuple):
   id: int = 0
@@ -173,6 +177,81 @@ def build_embedding_matrix(file, threshold, dim, word_index):
         matrix[i] = embedding_vector
   return matrix
 
+def build_model_with_attention(embedding_matrix, model_params):
+  # ToDo := Max seq in questions and context
+  context_inputs = Input(shape=(model_params.max_seq,))
+  question_inputs = Input(shape=(model_params.max_seq,))
+  embedding_lookup = Embedding(
+      model_params.max_words,
+      model_params.embeddings_size,
+      input_length=model_params.max_seq,
+      name='embeddings')
+  embedded_context = embedding_lookup(context_inputs)
+  embedded_question = embedding_lookup(question_inputs)
+  
+  # Create network
+  context = LSTM(
+      model_params.lstm_hidden_size, 
+      return_sequences=True,
+      return_state=True, name='context_lstm')
+  context = Bidirectional(
+      context,
+      kernel_regularizer=l2(model_params.regularization),
+      name='context_bilstm')
+  context_outputs, state_h = context(embedded_context)
+
+  question = LST(
+      model_params.lstm_hidden_size,
+      name='question_lstm')
+  question = Bidirectional(
+      question,
+      kernel_regularizer=l2(model_params.regularization),
+      name='question_bilstm')
+  question_outputs = question(embedded_question, initial_state=state_h)
+
+  # Calculate Attention
+  # (1) Intermediate attention
+  W_y = Dense(model_params.lstm_hidden_size, activation='linear',
+      use_bias=False, name='W_y')
+  h_context = W_y(context_outputs)
+
+  W_h = Dense(model_params.lstm_hidden_size, activation='linear',
+      use_bias=False, name='W_h')
+  h_question_part = W_h(question_outputs)
+  h_question = RepeatVector(model_params.lstm_hidden_size)(h_question_part)
+
+  added = Add()([h_context, h_question])
+  M = Activation(activation='tanh', name='M')(added)
+
+  # (2) Attention weights
+  alpha_ = TimeDistributed(Dense(1, activation='linear', use_bias=False),
+      name='alpha_')(M)
+  flat_alpha = Flatten(name='flat_alpha')(alpha_)
+  alpha = Dense(model_params.max_words, activation='softmax', name='alpha',
+      use_bias=False)(flat_alpha)
+
+  # (3) Attention result
+  r = Dot(axes=1, name='r')([h_context, alpha])
+
+  # (4) Pair representation
+  W_r = Dense(model_params.lstm_hidden_size, activation='linear',
+      use_bias=False, name='W_r')(r)
+  W_x = Dense(model_params.lstm_hidden_size, activation='linear',
+      use_bias=False, name='W_x')(h_question_part)
+  merged = Add()([W_r, W_x])
+  h_star = Activation('tanh', name='h_star')(merged)
+
+  ## End of attention
+  classifier = Dense(model_params.num_classes, activation='softmax',
+      name='classifier')
+  labels = classifier(h_star)
+
+  adam = Adam(lr=model_params.lrate)
+  model = Model(inputs=[context_inputs, question_inputs], outputs=labels)
+  model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
+
+  return model
+
 def build_model(embedding_matrix, model_params):
   model = Sequential()
   # 1. Define and add Embedding layer to the model
@@ -186,7 +265,8 @@ def build_model(embedding_matrix, model_params):
   # 3. Avoid overfitting with dropout
   model.add(Dropout(model_params.dropout))
   # 4. Define and add Dense layer to the model
-  model.add(Dense(1, activation='sigmoid'))
+  model.add(Dense(model_params.num_classes, activation='sigmoid',
+      name='classifier'))
   model.summary()
   model.layers[0].set_weights([embedding_matrix])
   model.layers[0].trainable = False
@@ -256,6 +336,8 @@ def main():
   dev_examples = read_examples(FLAGS.validate_file, is_training=True)
   test_examples = read_examples(FLAGS.predict_file, is_training=False)
 
+  num_classes = len(train_examples[0].answers)
+
   shuffle(train_examples)
   shuffle(dev_examples)
   shuffle(test_examples)
@@ -281,7 +363,9 @@ def main():
       lstm_hidden_size=lstm_hidden_size,
       regularization=0.01,
       dropout=0.2,
-      lrate=FLAGS.learning_rate)
+      lrate=FLAGS.learning_rate,
+      max_seq=max_seq,
+      num_classes=num_classes)
 
   model_structure_file = os.path.join(FLAGS.output_dir, 'model.json')
   model_weigths_file = os.path.join(FLAGS.output_dir, 'model.h5')
