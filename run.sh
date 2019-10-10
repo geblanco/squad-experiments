@@ -30,20 +30,27 @@ copy_model() {
 # no errors accepted
 set -e
 
-echo "###### Starting experiment $(date)"
+echo "###### Starting experiments $(date)"
+total_start_time=$(date -u +%s)
 experiments=($@)
 for exp in ${experiments[@]}; do
+  echo "###### Starting experiment - $exp"
+  start_time=$(date -u +%s)
   source $exp
   clean_data_dir $OUTPUT_DIR
   # run experiment
   echo "Run $exp"
   ./run_experiment.sh $exp
+  end_time=$(date -u +%s)
+  elapsed=$(python -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+  echo "###### End experiment - $exp - $elapsed minutes"
   if [[ $? -ne 0 ]]; then
     exit $?
   fi
+  echo "###### Backup... - $exp"
   remote_dest=$(basename `dirname $OUTPUT_DIR`)
-  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
-  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
+  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/"
+  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/
   if [[ "$TRAIN" == "True" && ! -z $DROP_MODEL ]]; then
     drop_base=$(dirname $DROP_MODEL)
     drop_name=$(basename $DROP_MODEL)
@@ -52,8 +59,11 @@ for exp in ${experiments[@]}; do
     copy_model $OUTPUT_DIR/checkpoint $drop_base $drop_name
     unset DROP_MODEL
   fi
+  echo "###### done"
 done
-echo "###### End of experiment $(date)"
+total_end_time=$(date -u +%s)
+total_elapsed=$(python -c "print('{:.2f}'.format(($total_start_time - $total_end_time)/60.0 ))")
+echo "###### End of experiments $(date) ($total_elapsed) minutes"
 echo "###### Copying models..."
 echo "Backup models $SRVR_HORACIO_ENV:/data/lihlith/"
 rsync -avrzP models $SRVR_HORACIO_ENV:/data/lihlith/

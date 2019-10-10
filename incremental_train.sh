@@ -33,7 +33,8 @@ if [[ -z $SRVR_HORACIO_ENV ]]; then
   exit 1
 fi
 
-echo "###### Starting experiment $(date)"
+echo "###### Starting experiments $(date)"
+total_start_time=$(date -u +%s)
 experiments=($@)
 for exp in ${experiments[@]}; do
   exp_name=$(basename $exp)
@@ -51,11 +52,15 @@ for exp in ${experiments[@]}; do
     continue
   fi
   for step in $(seq $N_STEPS); do
-    echo "############ $exp_name - step $step ############"
     #### sample dataset and run experiment
+      echo "###### Starting experiment - $exp_name - step $step"
+      start_time=$(date -u +%s)
       echo "Sampling $(basename $TRAIN_FILE)"
       python3 scripts/sample_dataset.py -d $SOURCE_DATASET_FILE -o $TRAIN_FILE -s $SAMPLE_SIZE
       ./run_experiment.sh $exp
+      end_time=$(date -u +%s)
+      elapsed=$(python -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+      echo "###### End experiment - $exp - $elapsed minutes"
       if [[ $? -ne 0 ]]; then
         exit $?
       fi
@@ -80,10 +85,14 @@ for exp in ${experiments[@]}; do
     ## Attention! No backup of run after steps!
       if [[ ! -z RUN_AFTER_STEP ]]; then
         for run_after_exp in ${RUN_AFTER_STEP[@]}; do
-          echo "############ $exp_name - run after $(basename $run_after_exp) ############"
+          echo "###### Starting $exp_name - run after $(basename $run_after_exp) ############"
+          start_time=$(date -u +%s)
           source $run_after_exp
           [[ ! -d $OUTPUT_DIR ]] && mkdir -p $OUTPUT_DIR
           ./run_experiment.sh $run_after_exp
+          end_time=$(date -u +%s)
+          elapsed=$(python -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+          echo "###### End experiment - $exp_name - $elapsed minutes"
           if [[ $? -ne 0 ]]; then
             exit $?
           fi
@@ -91,18 +100,18 @@ for exp in ${experiments[@]}; do
             cp "$OUTPUT_DIR/${out_file}.json" "$OUTPUT_DIR/${out_file}_${SAMPLE_SIZE}_${step}.json"
           done
           remote_dest=$(basename `dirname $OUTPUT_DIR`)
-          echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/"
-          rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/incremental/$remote_dest/
+          echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/incremental/$remote_dest/"
+          rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/incremental/$remote_dest/
         done
       fi
       source $exp
   done
   #### backup results
     remote_dest=$(basename `dirname $OUTPUT_DIR`)
-    echo "Backup $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
-    rsync -avrzP $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
-    echo "Backup $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/"
-    rsync -avrzP $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments_models/$remote_dest/
+    echo "Backup $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/"
+    rsync -avrzP $STEP_MODELS_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/
+    echo "Backup $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/"
+    rsync -avrzP $AVERAGES_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/
     # we put `set -e` so exit on error should be enusured, but just in case, to avoid loosing models...
     if [[ $? -ne 0 ]]; then
       exit $?
@@ -110,5 +119,7 @@ for exp in ${experiments[@]}; do
     # delete to save space
     clean_data_dir $AVERAGES_DIR $STEP_MODELS_DIR
 done
-echo "###### End of  experiment $(date)"
+total_end_time=$(date -u +%s)
+total_elapsed=$(python -c "print('{:.2f}'.format(($total_start_time - $total_end_time)/60.0 ))")
+echo "###### End of experiments $(date) ($total_elapsed) minutes"
 echo "######################################"
