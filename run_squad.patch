@@ -1,8 +1,16 @@
 diff --git a/run_squad.py b/run_squad.py
-index edd4c3e..08e10cf 100644
+index edd4c3e..bef7221 100644
 --- a/run_squad.py
 +++ b/run_squad.py
-@@ -50,6 +50,9 @@ flags.DEFINE_string(
+@@ -29,6 +29,7 @@ import tokenization
+ import six
+ import tensorflow as tf
+ 
++
+ flags = tf.flags
+ 
+ FLAGS = flags.FLAGS
+@@ -50,6 +51,9 @@ flags.DEFINE_string(
  flags.DEFINE_string("train_file", None,
                      "SQuAD json for training. E.g., train-v1.1.json")
  
@@ -12,7 +20,7 @@ index edd4c3e..08e10cf 100644
  flags.DEFINE_string(
      "predict_file", None,
      "SQuAD json for predictions. E.g., dev-v1.1.json or test-v1.1.json")
-@@ -224,6 +227,36 @@ class InputFeatures(object):
+@@ -224,6 +228,45 @@ class InputFeatures(object):
      self.is_impossible = is_impossible
  
  
@@ -45,11 +53,20 @@ index edd4c3e..08e10cf 100644
 +  def should_stop(self):
 +    return self.wait >= self.patience
 +
++  def __str__(self):
++    return self.__repr__()
++
++  def __repr__(self):
++    s = 'Stats: '
++    s +='mode={}, best={}, wait={}, patience={}'.format(
++      self.mode, self.best, self.wait, self.patience)
++    return s
++
 +
  def read_squad_examples(input_file, is_training):
    """Read a SQuAD json file into a list of SquadExample."""
    with tf.gfile.Open(input_file, "r") as reader:
-@@ -284,7 +317,7 @@ def read_squad_examples(input_file, is_training):
+@@ -284,7 +327,7 @@ def read_squad_examples(input_file, is_training):
                  doc_tokens[start_position:(end_position + 1)])
              cleaned_answer_text = " ".join(
                  tokenization.whitespace_tokenize(orig_answer_text))
@@ -58,7 +75,7 @@ index edd4c3e..08e10cf 100644
                tf.logging.warning("Could not find answer: '%s' vs. '%s'",
                                   actual_text, cleaned_answer_text)
                continue
-@@ -427,31 +460,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
+@@ -427,31 +470,31 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
          start_position = 0
          end_position = 0
  
@@ -115,7 +132,7 @@ index edd4c3e..08e10cf 100644
  
        feature = InputFeatures(
            unique_id=unique_id,
-@@ -657,7 +690,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -657,7 +700,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
        start_loss = compute_loss(start_logits, start_positions)
        end_loss = compute_loss(end_logits, end_positions)
  
@@ -128,18 +145,17 @@ index edd4c3e..08e10cf 100644
  
        train_op = optimization.create_optimizer(
            total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-@@ -666,7 +703,9 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -666,7 +713,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
            mode=mode,
            loss=total_loss,
            train_op=train_op,
 -          scaffold_fn=scaffold_fn)
 +          scaffold_fn=scaffold_fn,
 +          training_hooks=[logging_hook])
-+
      elif mode == tf.estimator.ModeKeys.PREDICT:
        predictions = {
            "unique_ids": unique_ids,
-@@ -684,7 +723,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
+@@ -684,7 +732,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
    return model_fn
  
  
@@ -148,17 +164,14 @@ index edd4c3e..08e10cf 100644
    """Creates an `input_fn` closure to be passed to TPUEstimator."""
  
    name_to_features = {
-@@ -723,6 +762,9 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
-       d = d.repeat()
-       d = d.shuffle(buffer_size=100)
+@@ -729,21 +777,109 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+             batch_size=batch_size,
+             drop_remainder=drop_remainder))
  
 +    if take:
 +      d = d.take(take)
 +
-     d = d.apply(
-         tf.contrib.data.map_and_batch(
-             lambda record: _decode_record(record, name_to_features),
-@@ -733,17 +775,98 @@ def input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+     return d
  
    return input_fn
  
@@ -204,6 +217,7 @@ index edd4c3e..08e10cf 100644
 +    return f1
 +
 +  def should_stop():
++    tf.logging.info("***** Running validation *****")
 +    all_results = []
 +    for result in estimator.predict(
 +        val_input_fn, yield_single_examples=True):
@@ -244,6 +258,9 @@ index edd4c3e..08e10cf 100644
 +    acc_val = sum(acc) / len(val_examples)
 +    stats.update(acc_val)
 +
++    tf.logging.info("   Should stop %s" % str(stats))
++    tf.logging.info("***** End of validation *****")
++
 +    return stats.should_stop()
 +
 +  return should_stop
@@ -263,7 +280,7 @@ index edd4c3e..08e10cf 100644
  
    example_index_to_features = collections.defaultdict(list)
    for feature in all_features:
-@@ -903,9 +1026,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -903,9 +1039,15 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
        all_predictions[example.qas_id] = nbest_json[0]["text"]
      else:
        # predict "" iff the null score - the score of best non-null > threshold
@@ -281,7 +298,7 @@ index edd4c3e..08e10cf 100644
        if score_diff > FLAGS.null_score_diff_threshold:
          all_predictions[example.qas_id] = ""
        else:
-@@ -913,6 +1042,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+@@ -913,6 +1055,17 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
  
      all_nbest_json[example.qas_id] = nbest_json
  
@@ -299,10 +316,56 @@ index edd4c3e..08e10cf 100644
    with tf.gfile.GFile(output_prediction_file, "w") as writer:
      writer.write(json.dumps(all_predictions, indent=4) + "\n")
  
-@@ -1122,6 +1262,108 @@ def validate_flags_or_throw(bert_config):
+@@ -923,7 +1076,6 @@ def write_predictions(all_examples, all_features, all_results, n_best_size,
+     with tf.gfile.GFile(output_null_log_odds_file, "w") as writer:
+       writer.write(json.dumps(scores_diff_json, indent=4) + "\n")
+ 
+-
+ def get_final_text(pred_text, orig_text, do_lower_case):
+   """Project the tokenized prediction back to the original text."""
+ 
+@@ -1019,7 +1171,6 @@ def get_final_text(pred_text, orig_text, do_lower_case):
+   output_text = orig_text[orig_start_position:(orig_end_position + 1)]
+   return output_text
+ 
+-
+ def _get_best_indexes(logits, n_best_size):
+   """Get the n-best logits from a list."""
+   index_and_score = sorted(enumerate(logits), key=lambda x: x[1], reverse=True)
+@@ -1122,6 +1273,91 @@ def validate_flags_or_throw(bert_config):
          "The max_seq_length (%d) must be greater than max_query_length "
          "(%d) + 3" % (FLAGS.max_seq_length, FLAGS.max_query_length))
  
++def write_examples_as_features(tokenizer, input_file, out_file, is_training=False, shuffle=False):
++  examples = read_squad_examples(input_file=input_file, is_training=is_training)
++
++  if shuffle:
++    # Pre-shuffle the input to avoid having to make a very large shuffle
++    # buffer in in the `input_fn`.
++    rng = random.Random(12345)
++    rng.shuffle(examples)
++
++  f_writer = FeatureWriter(
++      filename=out_file,
++      is_training=is_training)
++  features = []
++
++  def append_feature(feature):
++    features.append(feature)
++    f_writer.process_feature(feature)
++
++  convert_examples_to_features(
++      examples=examples,
++      tokenizer=tokenizer,
++      max_seq_length=FLAGS.max_seq_length,
++      doc_stride=FLAGS.doc_stride,
++      max_query_length=FLAGS.max_query_length,
++      is_training=is_training,
++      output_fn=append_feature)
++  f_writer.close()
++
++  return examples, features
++
 +def prepare_train_input_pipeline(tokenizer, overwrite=False):
 +  train_examples = read_squad_examples(
 +      input_file=FLAGS.train_file, is_training=True)
@@ -344,71 +407,24 @@ index edd4c3e..08e10cf 100644
 +  return num_train_examples, num_train_steps, num_warmup_steps, train_writer.num_features, train_filename
 +
 +def prepare_validation_input_pipeline(tokenizer):
-+  val_examples = read_squad_examples(
-+      input_file=FLAGS.validation_file, is_training=True)
 +
-+  val_filename = os.path.join(FLAGS.output_dir, "train.tf_record")
-+
-+  # Pre-shuffle the input to avoid having to make a very large shuffle
-+  # buffer in in the `input_fn`.
-+  rng = random.Random(12345)
-+  rng.shuffle(val_examples)
-+
-+  # We write to a temporary file to avoid storing very large constant tensors
-+  # in memory.
-+  val_writer = FeatureWriter(
-+      filename=val_filename,
-+      is_training=True)
-+
-+  val_features = []
-+
-+  def append_feature(feature):
-+    val_features.append(feature)
-+    val_writer.process_feature(feature)
-+
-+  # Hack: we pass train=True to get gold answers so we can asses validation accuracy
-+  convert_examples_to_features(
-+      examples=val_examples,
-+      tokenizer=tokenizer,
-+      max_seq_length=FLAGS.max_seq_length,
-+      doc_stride=FLAGS.doc_stride,
-+      max_query_length=FLAGS.max_query_length,
-+      is_training=True,
-+      output_fn=append_feature)
-+  val_writer.close()
++  val_filename = os.path.join(FLAGS.output_dir, "validation.tf_record")
++  val_examples, val_features = write_examples_as_features(tokenizer, FLAGS.validation_file,
++                        val_filename, is_training=False, shuffle=True)
 +
 +  return val_examples, val_features, val_filename
 +
 +def prepare_evaluate_input_pipeline(tokenizer):
-+  eval_examples = read_squad_examples(
-+      input_file=FLAGS.predict_file, is_training=False)
 +
 +  eval_filename = os.path.join(FLAGS.output_dir, "eval.tf_record")
-+
-+  eval_writer = FeatureWriter(
-+      filename=eval_filename,
-+      is_training=False)
-+  eval_features = []
-+
-+  def append_feature(feature):
-+    eval_features.append(feature)
-+    eval_writer.process_feature(feature)
-+
-+  convert_examples_to_features(
-+      examples=eval_examples,
-+      tokenizer=tokenizer,
-+      max_seq_length=FLAGS.max_seq_length,
-+      doc_stride=FLAGS.doc_stride,
-+      max_query_length=FLAGS.max_query_length,
-+      is_training=False,
-+      output_fn=append_feature)
-+  eval_writer.close()
++  eval_examples, eval_features = write_examples_as_features(tokenizer, FLAGS.predict_file,
++                                  eval_filename, is_training=True, shuffle=False)
 +
 +  return eval_examples, eval_features, eval_filename
  
  def main(_):
    tf.logging.set_verbosity(tf.logging.INFO)
-@@ -1151,20 +1393,12 @@ def main(_):
+@@ -1151,20 +1387,12 @@ def main(_):
            num_shards=FLAGS.num_tpu_cores,
            per_host_input_for_training=is_per_host))
  
@@ -433,7 +449,7 @@ index edd4c3e..08e10cf 100644
  
    model_fn = model_fn_builder(
        bert_config=bert_config,
-@@ -1185,67 +1419,64 @@ def main(_):
+@@ -1185,67 +1413,64 @@ def main(_):
        predict_batch_size=FLAGS.predict_batch_size)
  
    if FLAGS.do_train:
@@ -497,7 +513,7 @@ index edd4c3e..08e10cf 100644
 +        estimator=estimator,
 +        should_stop_fn=should_stop_fn,
 +        run_every_secs=None,
-+        run_every_steps=1
++        run_every_steps=2
 +      )
 +      hooks.append(early_stopping)
 +
@@ -541,21 +557,23 @@ index edd4c3e..08e10cf 100644
          seq_length=FLAGS.max_seq_length,
          is_training=False,
          drop_remainder=False)
-@@ -1270,11 +1501,13 @@ def main(_):
+@@ -1270,11 +1495,16 @@ def main(_):
      output_nbest_file = os.path.join(FLAGS.output_dir, "nbest_predictions.json")
      output_null_log_odds_file = os.path.join(FLAGS.output_dir, "null_odds.json")
  
 -    write_predictions(eval_examples, eval_features, all_results,
 -                      FLAGS.n_best_size, FLAGS.max_answer_length,
 -                      FLAGS.do_lower_case, output_prediction_file,
--                      output_nbest_file, output_null_log_odds_file)
 +    all_predictions, all_nbest_json, scores_diff_json = create_predictions(eval_examples,
 +          eval_features, all_results,
 +          FLAGS.n_best_size, FLAGS.max_answer_length,
 +          FLAGS.do_lower_case)
- 
++
 +    write_predictions(all_predictions, all_nbest_json, scores_diff_json, output_prediction_file,
-+                      output_nbest_file, output_null_log_odds_file)
+                       output_nbest_file, output_null_log_odds_file)
+ 
++  # print("Total Training Time: " + str(end_train - start_train) + " seconds.")
++
  
  if __name__ == "__main__":
    flags.mark_flag_as_required("vocab_file")
