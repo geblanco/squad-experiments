@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='newsqa_untrained_squad_model.experiment'
+_me='newsqa_pred_squad_model.experiment'
 
 EXP_NAME='News QA-Raw +SQuAD'
 META='News QA Accuracy with SQuAD training'

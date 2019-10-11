@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='triviaqa_untrained_newsqa_model.experiment'
+_me='triviaqa_pred_newsqa_model.experiment'
 
 EXP_NAME='TriviaQA-Raw +NewsQA'
 META='TriviaQA Accuracy with training only over NewsQA'

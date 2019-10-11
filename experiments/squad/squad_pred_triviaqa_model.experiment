@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='squad_untrained_triviaqa_model.experiment'
+_me='squad_pred_triviaqa_model.experiment'
 
 EXP_NAME='SQuAD-Raw +TriviaQA'
 META='SQuAD only trained over TriviaQA'
