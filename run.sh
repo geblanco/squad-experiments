@@ -42,7 +42,7 @@ for exp in ${experiments[@]}; do
   echo "Run $exp"
   ./run_experiment.sh $exp
   end_time=$(date -u +%s)
-  elapsed=$(python3 -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+  elapsed=$(python3 -c "print('{:.2f}'.format(($end_time - $start_time)/60.0 ))")
   echo "###### End experiment - $exp - $elapsed minutes"
   if [[ $? -ne 0 ]]; then
     exit $?
@@ -62,7 +62,7 @@ for exp in ${experiments[@]}; do
   echo "###### done"
 done
 total_end_time=$(date -u +%s)
-total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_start_time - $total_end_time)/60.0 ))")
+total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_end_time - $total_start_time)/60.0 ))")
 echo "###### End of experiments $(date) ($total_elapsed) minutes"
 echo "###### Copying models..."
 echo "Backup models $SRVR_HORACIO_ENV:/data/lihlith/"

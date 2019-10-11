@@ -59,7 +59,7 @@ for exp in ${experiments[@]}; do
       python3 scripts/sample_dataset.py -d $SOURCE_DATASET_FILE -o $TRAIN_FILE -s $SAMPLE_SIZE
       ./run_experiment.sh $exp
       end_time=$(date -u +%s)
-      elapsed=$(python3 -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+      elapsed=$(python3 -c "print('{:.2f}'.format(($end_time - $start_time)/60.0 ))")
       echo "###### End experiment - $exp - $elapsed minutes"
       if [[ $? -ne 0 ]]; then
         exit $?
@@ -91,7 +91,7 @@ for exp in ${experiments[@]}; do
           [[ ! -d $OUTPUT_DIR ]] && mkdir -p $OUTPUT_DIR
           ./run_experiment.sh $run_after_exp
           end_time=$(date -u +%s)
-          elapsed=$(python3 -c "print('{:.2f}'.format(($start_time - $end_time)/60.0 ))")
+          elapsed=$(python3 -c "print('{:.2f}'.format(($end_time - $start_time)/60.0 ))")
           echo "###### End experiment - $exp_name - $elapsed minutes"
           if [[ $? -ne 0 ]]; then
             exit $?
@@ -120,6 +120,6 @@ for exp in ${experiments[@]}; do
     clean_data_dir $AVERAGES_DIR $STEP_MODELS_DIR
 done
 total_end_time=$(date -u +%s)
-total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_start_time - $total_end_time)/60.0 ))")
+total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_end_time - $total_start_time)/60.0 ))")
 echo "###### End of experiments $(date) ($total_elapsed) minutes"
 echo "######################################"

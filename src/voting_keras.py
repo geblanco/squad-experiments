@@ -5,10 +5,11 @@ from keras.layers import Input, Embedding, Bidirectional, LSTM, Dense, Dropout
 from keras.layers import RepeatVector, TimeDistributed, Dot, Flatten, Add
 from keras.layers import Activation
 from keras.models import Sequential, Model
-from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam
-from keras.regularizers import l2
 from keras.models import model_from_json
+from keras.regularizers import l2
+from keras.optimizers import Adam
+from keras.callbacks import EarlyStopping
+from keras.utils import to_categorical
 from keras import preprocessing
 
 from typing import NamedTuple
@@ -44,7 +45,7 @@ class Example(NamedTuple):
   context_text: str = ''
   doc_tokens: list = []
   answers: list = []
-  correct: int = -1
+  correct: list = []
 
 def parse_args():
   parser = argparse.ArgumentParser()
@@ -107,6 +108,8 @@ def read_examples(input_file, is_training):
     # when training, skip examples with no correct system
     if is_training and entry['correct'] == -1:
       continue
+    elif entry['correct'] == -1:
+      entry['correct'] = 17
 
     example = Example(
         id=entry['id'],
@@ -114,7 +117,7 @@ def read_examples(input_file, is_training):
         context_text=entry['context'],
         doc_tokens=get_doc_tokens(entry['context']),
         answers=entry['answers'],
-        correct=entry['correct'])
+        correct=to_categorical(entry['correct']))
     examples.append(example)
 
   return examples
@@ -177,38 +180,7 @@ def build_embedding_matrix(file, threshold, dim, word_index):
         matrix[i] = embedding_vector
   return matrix
 
-def build_model_with_attention(embedding_matrix, model_params):
-  # ToDo := Max seq in questions and context
-  context_inputs = Input(shape=(model_params.max_seq,))
-  question_inputs = Input(shape=(model_params.max_seq,))
-  embedding_lookup = Embedding(
-      model_params.max_words,
-      model_params.embeddings_size,
-      input_length=model_params.max_seq,
-      name='embeddings')
-  embedded_context = embedding_lookup(context_inputs)
-  embedded_question = embedding_lookup(question_inputs)
-  
-  # Create network
-  context = LSTM(
-      model_params.lstm_hidden_size, 
-      return_sequences=True,
-      return_state=True, name='context_lstm')
-  context = Bidirectional(
-      context,
-      kernel_regularizer=l2(model_params.regularization),
-      name='context_bilstm')
-  context_outputs, state_h = context(embedded_context)
-
-  question = LST(
-      model_params.lstm_hidden_size,
-      name='question_lstm')
-  question = Bidirectional(
-      question,
-      kernel_regularizer=l2(model_params.regularization),
-      name='question_bilstm')
-  question_outputs = question(embedded_question, initial_state=state_h)
-
+def build_attention_layer(context_outputs, question_outputs, model_params):
   # Calculate Attention
   # (1) Intermediate attention
   W_y = Dense(model_params.lstm_hidden_size, activation='linear',
@@ -240,11 +212,49 @@ def build_model_with_attention(embedding_matrix, model_params):
       use_bias=False, name='W_x')(h_question_part)
   merged = Add()([W_r, W_x])
   h_star = Activation('tanh', name='h_star')(merged)
+  return h_star
+
+def build_model(embedding_matrix, model_params, with_attention=False):
+  # ToDo := Max seq in questions and context
+  context_inputs = Input(shape=(model_params.max_seq,))
+  question_inputs = Input(shape=(model_params.max_seq,))
+  embedding_lookup = Embedding(
+      model_params.max_words,
+      model_params.embeddings_size,
+      input_length=model_params.max_seq,
+      name='embeddings')
+  embedded_context = embedding_lookup(context_inputs)
+  embedded_question = embedding_lookup(question_inputs)
+  
+  # Create network
+  context = LSTM(
+      model_params.lstm_hidden_size, 
+      return_sequences=True,
+      return_state=True, name='context_lstm')
+  context = Bidirectional(
+      context,
+      kernel_regularizer=l2(model_params.regularization),
+      name='context_bilstm')
+  context_outputs, state_h = context(embedded_context)
+
+  question = LST(
+      model_params.lstm_hidden_size,
+      name='question_lstm')
+  question = Bidirectional(
+      question,
+      kernel_regularizer=l2(model_params.regularization),
+      name='question_bilstm')
+  question_outputs = question(embedded_question, initial_state=state_h)
+
+  if with_attention:
+    last_hidden = build_attention_layer(question_outputs, context_outputs, model_params)
+  else:
+    last_hidden = question_outputs
 
   ## End of attention
   classifier = Dense(model_params.num_classes, activation='softmax',
       name='classifier')
-  labels = classifier(h_star)
+  labels = classifier(last_hidden)
 
   adam = Adam(lr=model_params.lrate)
   model = Model(inputs=[context_inputs, question_inputs], outputs=labels)
@@ -252,34 +262,10 @@ def build_model_with_attention(embedding_matrix, model_params):
 
   return model
 
-def build_model(embedding_matrix, model_params):
-  model = Sequential()
-  # 1. Define and add Embedding layer to the model
-  model.add(Embedding(model_params.max_words, model_params.embeddings_size, 
-      mask_zero=True))
-  # After the Embedding layer, 
-  # our activations have shape `(batch_size, max_seq, embeddings_size)`.
-  # 2. Define and add LSTM layer to the model.
-  model.add(Bidirectional(LSTM(model_params.lstm_hidden_size,
-      kernel_regularizer=l2(model_params.regularization))))
-  # 3. Avoid overfitting with dropout
-  model.add(Dropout(model_params.dropout))
-  # 4. Define and add Dense layer to the model
-  model.add(Dense(model_params.num_classes, activation='sigmoid',
-      name='classifier'))
-  model.summary()
-  model.layers[0].set_weights([embedding_matrix])
-  model.layers[0].trainable = False
-
-  adam = Adam(lr=model_params.lrate)
-  model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
-
-  return model
-
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
   early_stop = EarlyStopping(monitor='accuracy', patience=2)
   hist = model.fit(
-      x_train,
+      [x_train],
       y_train,
       epochs=epochs,
       batch_size=batch_size,
