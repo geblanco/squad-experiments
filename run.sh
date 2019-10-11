@@ -27,16 +27,9 @@ copy_model() {
   cp ${model_meta} "${output}/${name}.ckpt.meta"
 }
 
-# no errors accepted
-set -e
-
-echo "###### Starting experiments $(date)"
-total_start_time=$(date -u +%s)
-experiments=($@)
-for exp in ${experiments[@]}; do
+run_experiment() {
   echo "###### Starting experiment - $exp"
   start_time=$(date -u +%s)
-  source $exp
   clean_data_dir $OUTPUT_DIR
   # run experiment
   echo "Run $exp"
@@ -44,27 +37,54 @@ for exp in ${experiments[@]}; do
   end_time=$(date -u +%s)
   elapsed=$(python3 -c "print('{:.2f}'.format(($end_time - $start_time)/60.0 ))")
   echo "###### End experiment - $exp - $elapsed minutes"
-  if [[ $? -ne 0 ]]; then
-    exit $?
-  fi
+}
+
+backup() {
   echo "###### Backup... - $exp"
+  source ./server_data
   remote_dest=$(basename `dirname $OUTPUT_DIR`)
-  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/"
-  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:/data/lihlith/experiments/$remote_dest/
+  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:$remote_dir/$remote_dest/"
+  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:$remote_dir/$remote_dest/
+  echo "###### done"
+}
+
+backup_models() {
+  echo "###### Backup models..."
+  source ./server_data
+  echo "Backup models $SRVR_HORACIO_ENV:$remote_models_dir/"
+  rsync -avrzP models $SRVR_HORACIO_ENV:$remote_models_dir/
+  echo "######################################"
+}
+
+copy_drop_model() {
   if [[ "$TRAIN" == "True" && ! -z $DROP_MODEL ]]; then
+    echo "###### Copy model..."
+    echo "Copy model $OUTPUT_DIR/checkpoint $drop_base $drop_name"
     drop_base=$(dirname $DROP_MODEL)
     drop_name=$(basename $DROP_MODEL)
     mkdir -p $drop_base
-    echo "Copy model $OUTPUT_DIR/checkpoint $drop_base $drop_name"
     copy_model $OUTPUT_DIR/checkpoint $drop_base $drop_name
     unset DROP_MODEL
+    echo "###### done"
   fi
-  echo "###### done"
+}
+
+# no errors accepted
+set -e
+
+echo "###### Starting experiments $(date)"
+total_start_time=$(date -u +%s)
+experiments=($@)
+for exp in ${experiments[@]}; do
+  source $exp
+  run_experiment
+  if [[ $? -ne 0 ]]; then
+    exit $?
+  fi
+  backup
+  copy_drop_model
 done
 total_end_time=$(date -u +%s)
 total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_end_time - $total_start_time)/60.0 ))")
 echo "###### End of experiments $(date) ($total_elapsed) minutes"
-echo "###### Copying models..."
-echo "Backup models $SRVR_HORACIO_ENV:/data/lihlith/"
-rsync -avrzP models $SRVR_HORACIO_ENV:/data/lihlith/
-echo "######################################"
+backup_models
