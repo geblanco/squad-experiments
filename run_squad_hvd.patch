@@ -1,5 +1,5 @@
 diff --git a/run_squad_hvd.py b/run_squad_hvd.py
-index 1fb44fe..404838a 100644
+index 1fb44fe..8110e2f 100644
 --- a/run_squad_hvd.py
 +++ b/run_squad_hvd.py
 @@ -52,6 +52,9 @@ flags.DEFINE_string(
@@ -411,7 +411,7 @@ index 1fb44fe..404838a 100644
 +
 +  eval_filename = os.path.join(FLAGS.output_dir, "eval.tf_record")
 +  eval_examples, eval_features = write_examples_as_features(tokenizer, FLAGS.predict_file,
-+                                  eval_filename, is_training=True, shuffle=False)
++                                  eval_filename, is_training=False, shuffle=False)
 +
 +  return eval_examples, eval_features, eval_filename
  
