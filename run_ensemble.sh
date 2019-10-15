@@ -23,7 +23,8 @@ cd src
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# --max_words_length
+# --max_words
+# --max_query_length
 python voting_keras.py \
   --train_file=$TRAIN_FILE \
   --validate_file=$VALIDATE_FILE \

@@ -36,7 +36,8 @@ class ModelParams(NamedTuple):
   regularization: float = 0.0
   dropout: float = 0.0
   lrate: float = 0.0
-  max_seq: int = 0
+  max_seq_length: int = 0
+  max_query_length: int = 0
   num_classes: int = 0
 
 class Example(NamedTuple):
@@ -65,11 +66,14 @@ def parse_args():
       help='Total number of training epochs to perform.')
   parser.add_argument('--output_dir', default=None, required=True,
       help='The output directory where figures and model will be written.')
+  parser.add_argument('--max_query_length', default=64, type=int,
+      help='The maximum number of tokens for the question. Questions longer than '
+      'this will be truncated to this length.')
   parser.add_argument('--max_seq_length', default=384, type=int,
       help='The maximum total input sequence length after tokenization. '
       'Sequences longer than this will be truncated, and sequences shorter '
       'than this will be padded.')
-  parser.add_argument('--max_words_length', default=10000, type=int, 
+  parser.add_argument('--max_words', default=10000, type=int, 
       help='The maximum number of words accepted in the dictionary.')
   parser.add_argument('--lstm_hidden_size', default=128, type=int, required=True,
       help='The size of the internal representation on lstm layers.')
@@ -117,7 +121,7 @@ def read_examples(input_file, is_training):
         context_text=entry['context'],
         doc_tokens=get_doc_tokens(entry['context']),
         answers=entry['answers'],
-        correct=to_categorical(entry['correct']))
+        correct=entry['correct'])
     examples.append(example)
 
   return examples
@@ -126,8 +130,7 @@ def get_texts_and_labels_from_examples(examples):
   texts = []
   labels = []
   for example in examples:
-    text = example.context_text + example.question_text + ' '.join(example.answers)
-    texts.append(text)
+    texts.append((example.context_text, example.question_text))
     labels.append(example.correct)
   return texts, labels
 
@@ -139,21 +142,28 @@ def get_texts_and_labels_from_examples(examples):
 #       dev_and_test_texts, dev_and_test_labels, test_size=0.5, random_state=42)
 #   return train_texts, train_labels, dev_texts, dev_labels, test_texts, test_labels
 
-def get_padded_sequences(tokenizer, texts, max_seq):
+def get_padded_sequences(tokenizer, texts, length):
   sequences = tokenizer.texts_to_sequences(texts)
-  padded = preprocessing.sequence.pad_sequences(sequences, maxlen=max_seq)
+  padded = preprocessing.sequence.pad_sequences(sequences, maxlen=length,
+    padding='post', truncating='post')
   return padded
 
-def prepare_set(examples, max_words, max_seq, tokenizer, fit=False):
+def prepare_set(examples, max_seq_length, max_query_length, tokenizer, fit=False):
+  # texts come as context, question pairs
   texts, labels = get_texts_and_labels_from_examples(examples)
+  contexts, questions = list(zip(*texts))
   if fit:
-    # Build the word index (dictionary)
-    tokenizer.fit_on_texts(texts)
+    # Build the word index (dictionary) on all context texts
+    tokenizer.fit_on_texts(contexts)
 
-  # Get data as a lists of integers and pad, 2D integer tensor of shape `(samples, max_seq)`
-  x = get_padded_sequences(tokenizer, texts, max_seq)
+  # Get data as a lists of integers and pad, 2D integer tensor of shape `(samples, max_seq_length)`
+  x_contexts = get_padded_sequences(tokenizer, contexts, max_seq_length)
+  x_questions = get_padded_sequences(tokenizer, questions, max_query_length)
 
-  return x, labels
+  x = [x_contexts, x_questions]
+  x_labels = to_categorical(labels)
+
+  return x, x_labels
 
 def parse_embeddings(file):
   embeddings = {}
@@ -215,36 +225,42 @@ def build_attention_layer(context_outputs, question_outputs, model_params):
   return h_star
 
 def build_model(embedding_matrix, model_params, with_attention=False):
-  # ToDo := Max seq in questions and context
-  context_inputs = Input(shape=(model_params.max_seq,))
-  question_inputs = Input(shape=(model_params.max_seq,))
-  embedding_lookup = Embedding(
+  # ToDo := Test named inputs
+  context_inputs = Input(shape=(model_params.max_seq_length,))
+  question_inputs = Input(shape=(model_params.max_query_length,))
+  c_embedding_lookup = Embedding(
       model_params.max_words,
       model_params.embeddings_size,
-      input_length=model_params.max_seq,
-      name='embeddings')
-  embedded_context = embedding_lookup(context_inputs)
-  embedded_question = embedding_lookup(question_inputs)
+      input_length=model_params.max_seq_length,
+      name='context_embeddings')
+  q_embedding_lookup = Embedding(
+      model_params.max_words,
+      model_params.embeddings_size,
+      input_length=model_params.max_query_length,
+      name='question_embeddings')
+  embedded_context = c_embedding_lookup(context_inputs)
+  embedded_question = q_embedding_lookup(question_inputs)
   
   # Create network
   context = LSTM(
-      model_params.lstm_hidden_size, 
-      return_sequences=True,
-      return_state=True, name='context_lstm')
-  context = Bidirectional(
-      context,
-      kernel_regularizer=l2(model_params.regularization),
-      name='context_bilstm')
-  context_outputs, state_h = context(embedded_context)
-
-  question = LST(
       model_params.lstm_hidden_size,
-      name='question_lstm')
-  question = Bidirectional(
-      question,
       kernel_regularizer=l2(model_params.regularization),
-      name='question_bilstm')
-  question_outputs = question(embedded_question, initial_state=state_h)
+      return_sequences=True,
+      return_state=True,
+      name='context_lstm')
+  # context = Bidirectional(
+  #     context,
+  #     name='context_bilstm')
+  context_outputs, state_h, state_c = context(embedded_context)
+
+  question = LSTM(
+      model_params.lstm_hidden_size,
+      kernel_regularizer=l2(model_params.regularization),
+      name='question_lstm')
+  # question = Bidirectional(
+  #     question,
+  #     name='question_bilstm')
+  question_outputs = question(embedded_question, initial_state=[state_h, state_c])
 
   if with_attention:
     last_hidden = build_attention_layer(question_outputs, context_outputs, model_params)
@@ -265,7 +281,7 @@ def build_model(embedding_matrix, model_params, with_attention=False):
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
   early_stop = EarlyStopping(monitor='accuracy', patience=2)
   hist = model.fit(
-      [x_train],
+      x_train,
       y_train,
       epochs=epochs,
       batch_size=batch_size,
@@ -308,8 +324,9 @@ def restore_model(model_structure_file, model_weigths_file):
 def main():
   tf.gfile.MakeDirs(FLAGS.output_dir)
   # params
-  max_words = FLAGS.max_words_length
-  max_seq = FLAGS.max_seq_length
+  max_words = FLAGS.max_words
+  max_seq_length = FLAGS.max_seq_length
+  max_query_length = FLAGS.max_query_length
   lstm_hidden_size = FLAGS.lstm_hidden_size
   epochs = FLAGS.num_train_epochs
   batch_size = FLAGS.batch_size
@@ -328,13 +345,16 @@ def main():
   shuffle(dev_examples)
   shuffle(test_examples)
 
-  x_train, y_train = prepare_set(train_examples, max_words, max_seq, tokenizer=tokenizer, fit=True)
-  x_dev, y_dev = prepare_set(train_examples, max_words, max_seq, tokenizer=tokenizer)
-  x_test, y_test = prepare_set(train_examples, max_words, max_seq, tokenizer=tokenizer)
+  x_train, y_train = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer, fit=True)
+  x_dev, y_dev = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer)
+  x_test, y_test = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer)
 
-  print('Shape of the training set (nb_examples, vector_size): {}'.format(x_train.shape))
-  print('Shape of the validation set (nb_examples, vector_size): {}'.format(x_dev.shape))
-  print('Shape of the test set (nb_examples, vector_size): {}'.format(x_test.shape))
+  print('Shape of the training set (nb_examples, context_size), (nb_examples, question_size): {}'
+    .format(x_train[0].shape, x_train[1].shape))
+  print('Shape of the validation set (nb_examples, vector_size), (nb_examples, question_size): {}'
+    .format(x_dev[0].shape, x_dev[1].shape))
+  print('Shape of the test set (nb_examples, vector_size), (nb_examples, question_size): {}'
+    .format(x_test[0].shape, x_test[1].shape))
 
   # Read input embeddings
   word_index = tokenizer.word_index
@@ -350,7 +370,8 @@ def main():
       regularization=0.01,
       dropout=0.2,
       lrate=FLAGS.learning_rate,
-      max_seq=max_seq,
+      max_seq_length=max_seq_length,
+      max_query_length=max_query_length,
       num_classes=num_classes)
 
   model_structure_file = os.path.join(FLAGS.output_dir, 'model.json')
@@ -358,6 +379,7 @@ def main():
 
   if FLAGS.do_train:
     model = build_model(embedding_matrix, model_params)
+    model.summary()
     metrics = train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev)
     plot_results(metrics.history, ['loss', 'val_loss'], plot_name='model loss',
       out_file=os.path.join(FLAGS.output_dir, 'train_loss.png'))
