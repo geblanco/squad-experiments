@@ -279,7 +279,7 @@ def build_model(embedding_matrix, model_params, with_attention=False):
   return model
 
 def train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev):
-  early_stop = EarlyStopping(monitor='accuracy', patience=2)
+  early_stop = EarlyStopping(monitor='acc', patience=2)
   hist = model.fit(
       x_train,
       y_train,
