@@ -2,15 +2,15 @@
 
 _me='mixed_trained_squad_newsqa_model.experiment'
 
-EXP_NAME='SQuAD + NewsQA 8 Epochs Model'
-META='Model trained over a mix of SQuAD and NewsQA datasets for 8 epochs'
+EXP_NAME='SQuAD + NewsQA Model'
+META='Model trained over a mix of SQuAD and NewsQA datasets for 2 epochs'
 
 DOCKERIZE=0
 BACKUP=0
 
 BATCH_SIZE=16
 SEQ_LENGTH=256
-TRAIN_EPOCHS=8
+TRAIN_EPOCHS=2
 TRAIN=True
 THRESH=0
 

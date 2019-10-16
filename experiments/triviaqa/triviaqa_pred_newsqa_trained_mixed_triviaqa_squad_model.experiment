@@ -1,9 +1,9 @@
 #!/bin/bash
 
-_me='triviaqa_trained_squad_newsqa_model.experiment'
+_me='triviaqa_pred_newsqa_trained_mixed_triviaqa_squad_model.experiment'
 
-EXP_NAME='TriviaQA + SQuAD + NewsQA'
-META='TriviaQA over SQuAD and NewsQA models'
+EXP_NAME='TriviaQA + NewsQA + Mixed of TriviaQA and SQuAD'
+META='Predictions over triviaqa. Model trained over NewsQA and a mix of TriviaQA and SQuAD datasets for 2 epochs'
 
 DOCKERIZE=0
 BACKUP=0
@@ -11,13 +11,12 @@ BACKUP=0
 BATCH_SIZE=16
 SEQ_LENGTH=256
 TRAIN_EPOCHS=2
-TRAIN=True
+TRAIN=False
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/triviaqa/${_me%.*}_out
-CHECKPOINT=`pwd`/models/squad/squad_newsqa_model.ckpt
-DROP_MODEL=`pwd`/models/triviaqa/triviaqa_squad_newsqa_model
+CHECKPOINT=`pwd`/models/newsqa/newsqa_mixed_triviaqa_squad_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
 PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json

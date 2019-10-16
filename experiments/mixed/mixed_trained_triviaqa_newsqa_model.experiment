@@ -2,8 +2,8 @@
 
 _me='mixed_trained_triviaqa_newsqa_model.experiment'
 
-EXP_NAME='TriviaQA + NewsQA 8 Epochs Model'
-META='Model trained over a mix of TriviaQA and NewsQA datasets for 8 epochs'
+EXP_NAME='TriviaQA + NewsQA  Model'
+META='Model trained over a mix of TriviaQA and NewsQA datasets for 2 epochs'
 
 DOCKERIZE=0
 BACKUP=0
