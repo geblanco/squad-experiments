@@ -1,3 +1,4 @@
+tensorflow==1.13.0rc0
 sklearn
 keras
 matplotlib
