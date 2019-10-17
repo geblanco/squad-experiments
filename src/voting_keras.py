@@ -40,6 +40,10 @@ class ModelParams(NamedTuple):
   max_query_length: int = 0
   num_classes: int = 0
 
+  @staticmethod
+  def _to_json(params):
+    return params._asdict()
+
 class Example(NamedTuple):
   id: int = 0
   question_text: str = ''
@@ -105,15 +109,19 @@ def get_doc_tokens(text):
     prev_is_whitespace = False
   return doc_tokens
 
-def read_examples(input_file, is_training):
+def read_examples_from_file(input_file, is_training=False):
   data = json.load(open(input_file, 'r'))
+  return read_examples_from_data(data, is_training=is_training)
+
+def read_examples_from_data(data, is_training=False):
+  num_classes = len(data[0]['answers'])
   examples = []
   for entry in data:
     # when training, skip examples with no correct system
     if is_training and entry['correct'] == -1:
       continue
     elif entry['correct'] == -1:
-      entry['correct'] = 17
+      entry['correct'] = num_classes+1
 
     example = Example(
         id=entry['id'],
@@ -137,8 +145,7 @@ def get_texts_and_labels_from_examples(examples):
 # def train_dev_test_split(texts, labels):
 #   # sklearn only splits into two sets, divide twice to get the three sets (60, 10, 20)
 #   train_texts, train_labels, dev_and_test_texts, dev_and_test_labels = train_test_split(
-#       texts, labels, test_size=0.4, random_state=42)
-#   dev_texts, dev_labels, test_texts, test_labels = train_test_split(
+#       texts, labels, test_size=0.4, random_state=42)#   dev_texts, dev_labels, test_texts, test_labels = train_test_split(
 #       dev_and_test_texts, dev_and_test_labels, test_size=0.5, random_state=42)
 #   return train_texts, train_labels, dev_texts, dev_labels, test_texts, test_labels
 
@@ -313,13 +320,38 @@ def save_model(model, model_structure_file, model_weigths_file):
 
 def restore_model(model_structure_file, model_weigths_file):
   # load json and create model
-  with open(model_structure_file, 'r') as json_file:
-    loaded_model_json = json_file.read()
+  loaded_model_json = json.load(open(model_structure_file, 'r'))
   loaded_model = model_from_json(loaded_model_json)
   # load weights into new model
   loaded_model.load_weights(model_weigths_file)
   loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
   return loaded_model
+
+def save_model_params(model_params, model_params_file):
+  json.dump(obj=ModelParams._to_json(model_params), 
+      fp=open(model_params_file, 'w'))
+
+def get_model(model_dir):
+  model_structure_file = os.path.join(model_dir, 'model.json')
+  model_weigths_file = os.path.join(model_dir, 'model.h5')
+  model = restore_model(model_structure_file, model_weigths_file)
+  return model
+
+def get_model_params(model_dir):
+  model_params_file = os.path.join(model_dir, 'model_params.json')
+  model_params_json = json.load(open(model_params_file, 'r'))
+  return ModelParams(**model_params_json)
+
+def get_predictions_from_data(dataset, model_dir):
+  model = get_model(model_dir)
+  model_params = get_model_params(model_dir)
+
+  examples = read_examples_from_data(dataset)
+
+  tokenizer = preprocessing.text.Tokenizer(num_words=model_params.max_words)
+  x, y = prepare_set(examples, model_params.max_seq_length, 
+      model_params.max_query_length, tokenizer=tokenizer, fit=True)
+  return model.predict_on_batch(x)
 
 def main():
   tf.gfile.MakeDirs(FLAGS.output_dir)
@@ -335,9 +367,9 @@ def main():
   # Create a tokenize that takes the 10000 most common words
   tokenizer = preprocessing.text.Tokenizer(num_words=max_words)
 
-  train_examples = read_examples(FLAGS.train_file, is_training=True)
-  dev_examples = read_examples(FLAGS.validate_file, is_training=True)
-  test_examples = read_examples(FLAGS.predict_file, is_training=False)
+  train_examples = read_examples_from_file(FLAGS.train_file, is_training=True)
+  dev_examples = read_examples_from_file(FLAGS.validate_file, is_training=True)
+  test_examples = read_examples_from_file(FLAGS.predict_file, is_training=False)
 
   num_classes = len(train_examples[0].answers)
 
@@ -345,7 +377,8 @@ def main():
   shuffle(dev_examples)
   shuffle(test_examples)
 
-  x_train, y_train = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer, fit=True)
+  x_train, y_train = prepare_set(train_examples, max_seq_length, max_query_length, 
+      tokenizer=tokenizer, fit=True)
   x_dev, y_dev = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer)
   x_test, y_test = prepare_set(train_examples, max_seq_length, max_query_length, tokenizer=tokenizer)
 
@@ -374,19 +407,21 @@ def main():
       max_query_length=max_query_length,
       num_classes=num_classes)
 
+  model_params_file = os.path.join(FLAGS.output_dir, 'model_params.json')
   model_structure_file = os.path.join(FLAGS.output_dir, 'model.json')
   model_weigths_file = os.path.join(FLAGS.output_dir, 'model.h5')
 
   if FLAGS.do_train:
     model = build_model(embedding_matrix, model_params)
     model.summary()
-    metrics = train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev)
-    plot_results(metrics.history, ['loss', 'val_loss'], plot_name='model loss',
-      out_file=os.path.join(FLAGS.output_dir, 'train_loss.png'))
-    plot_results(metrics.history, ['accuracy', 'val_accuracy'], plot_name='model accuracy',
-        out_file=os.path.join(FLAGS.output_dir, 'train_accuracy.png'))
+    # metrics = train_model(model, epochs, batch_size, x_train, y_train, x_dev, y_dev)
+    # plot_results(metrics.history, ['loss', 'val_loss'], plot_name='model loss',
+    #   out_file=os.path.join(FLAGS.output_dir, 'train_loss.png'))
+    # plot_results(metrics.history, ['accuracy', 'val_accuracy'], plot_name='model accuracy',
+    #     out_file=os.path.join(FLAGS.output_dir, 'train_accuracy.png'))
     # save unified model
     save_model(model, model_structure_file, model_weigths_file)
+    save_model_params(model_params, model_params_file)
   else:
     # if not training, restore model from file
     model = restore_model(model_structure_file, model_weigths_file)
