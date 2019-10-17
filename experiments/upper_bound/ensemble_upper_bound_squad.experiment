@@ -6,8 +6,8 @@ EXP_SCRIPT=`pwd`/run_ensemble.sh
 EXP_NAME='squad-ensemble-squad' 
 META='Ensemble learning for upper bound on squad' 
  
-DOCKERIZE=1 
-BACKUP=1 
+DOCKERIZE=0
+BACKUP=0
  
 TRAIN=True
 
