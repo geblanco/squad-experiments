@@ -7,7 +7,7 @@ clean_data_dir() {
   local dir=$1
   if [[ -d $dir ]]; then
     echo "Delete $dir"
-    rm -rf $dir
+    sudo rm -rf $dir
   fi
   echo "Create $dir"
   mkdir -p $dir
@@ -40,20 +40,13 @@ run_experiment() {
 }
 
 backup() {
-  echo "###### Backup... - $exp"
+  local backup_dir=$1; shift
+  local dest_dir=$1; shift
+  echo "###### Backup $backup_dir..."
   source ./server_data
-  remote_dest=$(basename `dirname $OUTPUT_DIR`)
-  echo "Backup $OUTPUT_DIR $SRVR_HORACIO_ENV:$remote_dir/$remote_dest/"
-  rsync -avrzP $OUTPUT_DIR $SRVR_HORACIO_ENV:$remote_dir/$remote_dest/
+  echo "Backup $backup_dir $SRVR_HORACIO_ENV:$dest_dir/"
+  rsync -avrzP $backup_dir $SRVR_HORACIO_ENV:$dest_dir/
   echo "###### done"
-}
-
-backup_models() {
-  echo "###### Backup models..."
-  source ./server_data
-  echo "Backup models $SRVR_HORACIO_ENV:$remote_models_dir/"
-  rsync -avrzP models $SRVR_HORACIO_ENV:$remote_models_dir/
-  echo "######################################"
 }
 
 copy_drop_model() {
@@ -69,9 +62,30 @@ copy_drop_model() {
   fi
 }
 
+remove_model_data() {
+  local dir=$1; shift
+  local backup_dir=${dir}_backup
+  local to_save=(
+  	nbest_predictions.json
+	null_odds.json
+	predictions.json
+	train.log
+	train.run_time
+	train.tf_record
+	eval.tf_record)
+  mkdir $backup_dir
+  for f in ${to_save[@]}; do
+    fpath=$dir/$f
+    [[ -f $fpath ]] && cp $fpath $backup_dir
+  done
+  clean_data_dir $dir
+  mv $backup_dir $dir
+}
+
 # no errors accepted
 set -e
 
+source ./server_data
 echo "###### Starting experiments $(date)"
 total_start_time=$(date -u +%s)
 experiments=($@)
@@ -81,10 +95,12 @@ for exp in ${experiments[@]}; do
   if [[ $? -ne 0 ]]; then
     exit $?
   fi
-  backup
+  remote_dest=$(basename `dirname $OUTPUT_DIR`)
+  backup $OUTPUT_DIR $remote_dir/$remote_dest
   copy_drop_model
+  remove_model_data $OUTPUT_DIR
 done
 total_end_time=$(date -u +%s)
 total_elapsed=$(python3 -c "print('{:.2f}'.format(($total_end_time - $total_start_time)/60.0 ))")
 echo "###### End of experiments $(date) ($total_elapsed) minutes"
-backup_models
+backup models $remote_models_dir
