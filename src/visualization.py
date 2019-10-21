@@ -1,3 +1,50 @@
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+import numpy as np
+import argparse
+import json
+import sys
+import os
+
+FLAGS = None
+
+def parse_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--embeddings_dir', '-d', type=str, required=True,
+      help='dir with question and context embeddings')
+  parser.add_argument('--output_dir', type=str, required=True, 
+      help='directory to drop the processed data')
+
+  if len(sys.argv) == 1:
+    parser.print_help()
+    sys.exit(1)
+  return parser.parse_args()
+
+def load_embeddings(embeddings_dir):
+  embeddings = []
+  embedding_batches = [dir for dir in os.listdir(embeddings_dir) 
+      if dir.endswith('.npy')]
+  for batch in embedding_batches:
+    embedding_batch = np.load(os.path.join(embeddings_dir, batch),
+        allow_pickle=True)
+    embeddings.extend(embedding_batch)
+
+  return embeddings
+
+def main():
+  context_embs = load_embeddings(FLAGS.embeddings_dir, 'context')
+  stacked_context_embs = np.vstack(context_embs)
+
+  question_embs = load_embeddings(FLAGS.embeddings_dir, 'question')
+
+if __name__ == '__main__':
+  FLAGS = parse_args()
+  main()
+
 pca = PCA(n_components=30)
 pca.fit_transform(question_embs)
 pca.fit_transform(question_embs[0])
