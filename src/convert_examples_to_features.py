@@ -54,8 +54,8 @@ def process_data(data, batch_size, seq_length, model_dir, output_dir):
   # batch process to avoid memory excess
   total = int(len(data) / batch_size) +1
   for idx, batch in tqdm(enumerate(get_batches(data, batch_size)), total=total):
-    batch = [pad_batch(b, seq_length) for b in batch]
     embedded_data = extract_embeddings(model_dir, batch)
+    embedded_data = [pad_batch(b, seq_length) for b in embedded_data]
     batch_array = np.array(embedded_data)
     output = os.path.join(output_dir, 'batch_{}'.format(idx))
     np.save(output, batch_array)
