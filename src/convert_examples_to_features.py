@@ -1,4 +1,4 @@
-from keras_bert import extract_embeddings
+from keras_bert import extract_embeddings, POOL_NSP, POOL_MAX
 
 from tqdm import tqdm
 
@@ -18,7 +18,7 @@ def parse_args():
       help='directory containing the bert model to use for embedding')
   parser.add_argument('--output_dir', type=str, required=True, 
       help='directory to drop the processed data')
-  parser.add_argument('--max_query_length', default=64, type=int,
+  parser.add_argument('--max_query_length', default=32, type=int,
       help='The maximum number of tokens for the question. Questions longer than '
       'this will be truncated to this length.')
   parser.add_argument('--max_seq_length', default=384, type=int,
@@ -35,8 +35,8 @@ def pad_batch(batch, seq_length):
   batch_length = len(batch)
   if batch_length > seq_length:
     return batch[0:seq_length]
-  batch.extend([0]*(seq_length - batch_length))
-  return batch
+  pad = np.zeros(((seq_length - batch_length), batch.shape[-1]))
+  return np.append(batch, pad, axis=0)
 
 def get_batches(data, batch_size):
   total_amount = len(data)
@@ -48,14 +48,13 @@ def get_batches(data, batch_size):
     total_processed += (end - start)
     yield data[start:end]
 
-def process_data(data, batch_size, seq_length, model_dir, output_dir):
+def process_data(data, batch_size, model_dir, output_dir):
   # get embeddings
   # save as numpy array
   # batch process to avoid memory excess
   total = int(len(data) / batch_size) +1
   for idx, batch in tqdm(enumerate(get_batches(data, batch_size)), total=total):
     embedded_data = extract_embeddings(model_dir, batch)
-    embedded_data = [pad_batch(b, seq_length) for b in embedded_data]
     batch_array = np.array(embedded_data)
     output = os.path.join(output_dir, 'batch_{}'.format(idx))
     np.save(output, batch_array)
@@ -66,16 +65,14 @@ def main():
   output_dir = FLAGS.output_dir
   contexts = [d['context'] for d in data]
   questions = [d['question'] for d in data]
-  context_output_dir = os.path.join(output_dir, 'context')
-  question_output_dir = os.path.join(output_dir, 'question')
-  os.makedirs(context_output_dir, exist_ok=True)
-  os.makedirs(question_output_dir, exist_ok=True)
-  print('> Contexts')
-  process_data(contexts, batch_size=512, seq_length=FLAGS.max_seq_length, 
-      model_dir=model_dir, output_dir=context_output_dir)
-  print('> Questions')
-  process_data(questions, batch_size=512, seq_length=FLAGS.max_query_length,
-      model_dir=model_dir, output_dir=question_output_dir)
+  context_question = [(d['context'], d['question']) for d in data]
+  embeddings_output_dir = os.path.join(output_dir, 'context_question')
+  os.makedirs(embeddings_output_dir, exist_ok=True)
+  process_data(
+      data=context_question,
+      batch_size=512,
+      model_dir=model_dir,
+      output_dir=embeddings_output_dir)
 
 if __name__ == '__main__':
   FLAGS = parse_args()
