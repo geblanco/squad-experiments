@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_me='newsqa_pred_squad_8_epochs_model.experiment'
+
+EXP_NAME='NewsQA-Pred'
+META='NewsQA predictions with squad 8 epochs base model'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=8
+TRAIN=False
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/newsqa/${_me%.*}_out
+CHECKPOINT=`pwd`/models/squad/squad_8_epochs_base_model.ckpt
+
+TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
+PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
+
