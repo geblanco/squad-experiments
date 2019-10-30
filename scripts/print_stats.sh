@@ -2,9 +2,8 @@
 
 set -e 
 
-for file in $(cat filelist); do
-  exp_dir=$(dirname $file)
-  exp_file=${exp_dir%_out}.experiment
+for dir in $(cat filelist); do
+  exp_file=${dir%_out}.experiment
   if [[ ! -f $exp_file ]]; then
     exp_family_name=$(dirname $exp_file)
     exp_family_name=$(basename $exp_family_name)
@@ -20,5 +19,5 @@ for file in $(cat filelist); do
   fi
   source $exp_file
   # echo "$PREDICT_FILE $file --merge $exp_dir/results.json"
-  python scripts/eval.py $PREDICT_FILE $file --merge $exp_dir/results.json | python ./scripts/format_results.py --
+  python scripts/eval.py $PREDICT_FILE $dir/predictions.json --merge $dir/results.json | python ./scripts/format_results.py --
 done

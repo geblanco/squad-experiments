@@ -2,12 +2,19 @@
 
 set -e
 
+if [[ $# -lt 1 ]]; then
+  echo "Usage ./eval_experiments.sh <filelist>"
+  exit 0
+fi
+
+experiments=$(cat $1)
+
 eval_script=`pwd`/squad/evaluate-v2.0.py
-for exp in ${res_experiments[@]}; do
-  f_name=$(basename $exp)
+for exp in ${experiments[@]}; do
+  f_name=$(basename ${exp%_out})
   f_path=$(basename `dirname $exp`)/$f_name
   experiment="experiments/${f_path}.experiment"
-  data="${exp}_out"
+  data="${exp}"
   if [[ ! -f $experiment ]]; then
     echo "Unable to find $experiment"
     continue
