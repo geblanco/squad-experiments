@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_me='triviaqa_trained_mixed_2_epochs.experiment'
+
+EXP_NAME='TriviaQA +Mix 2 Epochs Model'
+META='Model trained over TriviaQA on top of a mix of SQuAD, TriviaQA and NewsQA datasets for 2 epochs'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/triviaqa/${_me%.*}_out
+CHECKPOINT=`pwd`/models/mixed/mixed_2_epochs_model.ckpt
+DROP_MODEL=`pwd`/models/triviaqa/triviaqa_mixed_2_epochs_model
+
+TRAIN_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-train.json
+PREDICT_FILE=`pwd`/experiments/triviaqa/data/triviaqa_squad/wikipedia-dev.json
