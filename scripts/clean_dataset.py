@@ -21,8 +21,6 @@ for entry in data:
   for paragraph in entry['paragraphs']:
     output_qas = []
     for qa in paragraph['qas']:
-      if qa['id'] == '5727e6cbff5b5019007d97ee':
-        print(qa)
       if (len(qa['answers']) != 1) and (not qa['is_impossible']):
         marked_impossible += 1
         qa['is_impossible'] = True
