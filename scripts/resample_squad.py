@@ -1,3 +1,4 @@
+from sklearn.utils import shuffle
 from tqdm import tqdm
 import argparse
 import random
@@ -6,8 +7,10 @@ import sys
 import os
 
 FLAGS = None
-TOLERANCE = 0.005
-TOPIC_COUNT = None
+# Tolerance in number of questions
+TOTAL_TOLERANCE = 50
+EMPTY_TOLERANCE = 50
+TOPIC_COUNT = {}
 
 def parse_args():
   parser = argparse.ArgumentParser()
@@ -29,18 +32,13 @@ def count_topic_ans(topic):
   topic_count['total'] = topic_count['has_ans'] + topic_count['no_ans']
   return topic_count
 
-def count_all_topics_ans_first(dataset):
-  topics = {}
-  for article in tqdm(dataset):
-    title = article['title']
-    topics[title] = count_topic_ans(article)
-  return topics
-
 def count_all_topics_ans(dataset):
   global TOPIC_COUNT
   topics = {}
   for article in dataset:
     title = article['title']
+    if TOPIC_COUNT.get(title, None) is None:
+      TOPIC_COUNT[title] = count_topic_ans(article)
     topics[title] = TOPIC_COUNT[title]
   return topics
 
@@ -52,8 +50,8 @@ def count_total_ans(dataset):
 
 def check_boundaries(total, empty, max_total, max_empty):
   acceptable = False
-  if (max_total > total) or abs(max_total - total) <= round(max_total * TOLERANCE):
-    if (max_empty > empty) or abs(max_empty - empty) <= round(max_empty * TOLERANCE):
+  if (max_total > total) or abs(max_total - total) <= TOTAL_TOLERANCE:
+    if (max_empty > empty) or abs(max_empty - empty) <= EMPTY_TOLERANCE:
       acceptable = True
   return acceptable
 
@@ -70,16 +68,15 @@ def check_end(split_set, sizes):
   total, empty = count_total_ans(split_set)
   max_total = sizes['total']
   max_empty = sizes['empty']
-  return abs(max_total - total) <= round(max_total * TOLERANCE) and \
-      abs(max_empty - empty) <= round(max_empty * TOLERANCE)
+  end = abs(max_total - total) <= TOTAL_TOLERANCE and \
+      abs(max_empty - empty) <= EMPTY_TOLERANCE
+  return end
 
 def add_splits_to_dataset(train_set, topics, topic_idx, split_sizes):
   done = False
   idx = topic_idx
   n_topics = len(topics)
   sizes = split_sizes['train']
-  if topic_idx == 0:
-    pbar = tqdm(total=n_topics)
   while not done and idx < n_topics:
     elem = topics[idx]
     if check_add(train_set, elem, sizes):
@@ -88,12 +85,8 @@ def add_splits_to_dataset(train_set, topics, topic_idx, split_sizes):
       done = check_end(train_set, sizes)
       if not done:
         train_set.remove(elem)
-    if topic_idx == 0:
-      pbar.update()
     idx += 1
-  if topic_idx == 0:
-    pbar.close()
-  return train_set 
+  return train_set
 
 def split_dataset(dataset, split_sizes):
   train_set= []
@@ -112,7 +105,8 @@ def get_proportions(datasets):
   lens = []
   proportions = []
   for dataset in datasets:
-    lens.append(len(dataset))
+    total, _ = count_total_ans(dataset)
+    lens.append(total)
   total = sum(lens)
   proportions = [l/total for l in lens]
   return proportions
@@ -120,8 +114,7 @@ def get_proportions(datasets):
 def setup_sizes(total_proportions, empty_proportions, total_len, empty_len):
   train_total = round(total_proportions[0] * total_len)
   dev_total = total_len - train_total
-  total_empty_proportion = empty_len/total_len
-  train_empty = round(total_empty_proportion * train_total)
+  train_empty = round(empty_proportions[0] * train_total)
   dev_empty = empty_len - train_empty
   print(f'Setup sizes {total_proportions} {empty_proportions} {total_len} {empty_len}')
   split_sizes = {
@@ -130,14 +123,30 @@ def setup_sizes(total_proportions, empty_proportions, total_len, empty_len):
   }
   return split_sizes
 
-def merge_datasets(datasets):
-  for dataset in datasets[1:]:
-    datasets[0].extend(dataset)
-  return datasets[0]
+def sort_dataset_by_topic_score(dataset, topics):
+  def sort_topic(topic):
+    total = topics[topic]['total']
+    has_ans_score = (topics[topic]['has_ans']*100)/ total
+    no_ans_score = (topics[topic]['no_ans']*100)/total
+    return (has_ans_score **2) + (no_ans_score **2)
 
-def save_dataset(path, dataset):
+  def sort_dataset(item):
+    return topic_keys.index(item['title'])
+
+  topic_keys = list(topics.keys())
+  topic_keys.sort(key=sort_topic)
+  dataset.sort(key=sort_dataset)
+  return dataset
+
+def merge_datasets(datasets):
+  ret = datasets[0].copy()
+  for dataset in datasets[1:]:
+    ret.extend(dataset)
+  return ret
+
+def save_dataset(path, dataset, **kwargs):
   with open(path, 'w') as f:
-    json.dump(fp=f, obj={ 'data': dataset })
+    json.dump(fp=f, obj={ 'data': dataset, **kwargs })
 
 def main(dataset_files, proportions):
   global TOPIC_COUNT
@@ -145,18 +154,23 @@ def main(dataset_files, proportions):
   for file in dataset_files:
     dataset = json.load(open(file , 'r'))['data']
     datasets.append(dataset)
-  total_proportions = get_proportions(datasets)
   full_dataset = merge_datasets(datasets)
-  TOPIC_COUNT = count_all_topics_ans_first(full_dataset)
+  shuffle(full_dataset)
+  topic_count = count_all_topics_ans(full_dataset)
   total, empty = count_total_ans(full_dataset)
   print(f'Total dataset len {total}, empty {empty}')
+  total_proportions = get_proportions(datasets)
   sizes = setup_sizes(total_proportions, proportions, total, empty)
   print(f'Sizes {sizes}')
+  # sort from min to max difference between total and emtpy answers
+  full_dataset = sort_dataset_by_topic_score(full_dataset, topic_count)
   train, dev = split_dataset(full_dataset, sizes)
-  print(f'End, train count {count_total_ans(train)}') 
-  print(f'End, dev count {count_total_ans(dev)}') 
-  train_name = os.path.join(output, f'squad-train-{proportions[0]}.json'),
-  dev_name = os.path.join(output, f'squad-dev_-{proportions[0]}.json'),
+  train_name = os.path.join(FLAGS.output, f'squad-train-{proportions[0]}.json')
+  dev_name = os.path.join(FLAGS.output, f'squad-dev-{proportions[1]}.json')
+  train_total, train_empty = count_total_ans(train)
+  dev_total, dev_empty = count_total_ans(dev)
+  print(f'End, train count {(train_total, train_empty)}: {train_empty/train_total}, saving to {train_name}') 
+  print(f'End, dev count {(dev_total, dev_empty)}: {dev_empty/dev_total}, saving to {dev_name}') 
   save_dataset(train_name, train)
   save_dataset(dev_name, dev)
 
