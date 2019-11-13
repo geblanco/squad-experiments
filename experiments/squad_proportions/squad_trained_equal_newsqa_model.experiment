@@ -1,0 +1,24 @@
+#!/bin/bash
+
+_me='squad_trained_equal_newsqa_model.experiment'
+
+EXP_NAME='SQuAD-Trained +NewsQA'
+META='SQuAD model over newsqa model, maintaining equal proportions over train and dev sets'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/squad/${_me%.*}_out
+CHECKPOINT=`pwd`/models/newsqa/newsqa_base_model.ckpt
+DROP_MODEL=`pwd`/models/squad_proportions/squad_equal_newsqa_model
+
+TRAIN_FILE=`pwd`/squad/squad-train-0.345.json
+PREDICT_FILE=`pwd`/squad/squad-dev-0.345.json
+

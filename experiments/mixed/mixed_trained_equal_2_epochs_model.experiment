@@ -1,0 +1,24 @@
+#!/bin/bash
+
+_me='mixed_trained_equal_2_epochs_model.experiment'
+
+EXP_NAME='SQuAD + TriviaQA + NewsQA 2 Epochs Model'
+META='Model trained over a mix of SQuAD, TriviaQA and NewsQA datasets for 2 epochs'
+META+='Maintaining equal proportions over train and dev sets'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/mixed/${_me%.*}_out
+CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
+DROP_MODEL=`pwd`/models/mixed/mixed_equal_2_epochs_model
+
+TRAIN_FILE=`pwd`/experiments/mixed/data/mixed_squad/squad-train-0.345.json
+PREDICT_FILE=`pwd`/experiments/mixed/data/mixed_squad/squad-dev-0.345.json

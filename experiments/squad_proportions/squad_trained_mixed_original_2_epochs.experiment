@@ -1,0 +1,24 @@
+#!/bin/bash
+
+_me='squad_trained_mixed_original_2_epochs.experiment'
+
+EXP_NAME='SQuAD +Mix 2 Epochs Model'
+META='Model trained over SQuAD on top of a mix of SQuAD, TriviaQA and NewsQA datasets for 2 epochs.'
+META+='Maintaining original proportions over train and dev sets'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/squad/${_me%.*}_out
+CHECKPOINT=`pwd`/models/mixed/mixed_original_2_epochs_model.ckpt
+DROP_MODEL=`pwd`/models/squad_proportions/squad_mixed_original_2_epochs_model
+
+TRAIN_FILE=`pwd`/squad/squad-train-0.3338.json
+PREDICT_FILE=`pwd`/squad/squad-dev-0.5007.json
