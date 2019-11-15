@@ -122,4 +122,3 @@ experiments/**/data
 predictions/*/*_data
 /plots
 
-*.filelist
