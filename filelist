@@ -5,6 +5,7 @@
 ./results/newsqa/newsqa_trained_squad_triviaqa_model_out
 ./results/newsqa/newsqa_trained_mixed_triviaqa_squad_model_out
 ./results/newsqa/newsqa_pred_mixed_2_epochs_out
+./results/newsqa/newsqa_trained_mixed_2_epochs_out
 
 
 ./results/squad/squad_pred_newsqa_model_out
@@ -14,6 +15,7 @@
 ./results/squad/squad_pred_newsqa_trained_squad_triviaqa_model_out
 ./results/squad/squad_pred_newsqa_trained_mixed_triviaqa_squad_model_out
 ./results/squad/squad_pred_mixed_2_epochs_out
+./results/squad/squad_pred_newsqa_trained_mixed_2_epochs_out
 
 
 ./results/triviaqa/triviaqa_pred_newsqa_model_out
@@ -23,6 +25,7 @@
 ./results/triviaqa/triviaqa_pred_newsqa_trained_squad_triviaqa_model_out
 ./results/triviaqa/triviaqa_pred_newsqa_trained_mixed_triviaqa_squad_model_out
 ./results/triviaqa/triviaqa_pred_mixed_2_epochs_out
+./results/triviaqa/triviaqa_pred_newsqa_trained_mixed_2_epochs_out
 
 
 ./results/newsqa/newsqa_pred_squad_model_out
@@ -30,8 +33,9 @@
 ./results/newsqa/newsqa_pred_squad_trained_triviaqa_model_out
 ./results/newsqa/newsqa_pred_squad_trained_triviaqa_newsqa_model_out
 ./results/newsqa/newsqa_pred_squad_trained_newsqa_triviaqa_model_out
-./results/newsqa/newsqa_trained_mixed_triviaqa_squad_model_out
+./results/newsqa/newsqa_pred_squad_trained_mixed_triviaqa_newsqa_model_out
 ./results/newsqa/newsqa_pred_mixed_2_epochs_out
+./results/newsqa/newsqa_pred_squad_trained_mixed_2_epochs_out
 
 
 ./results/squad/squad_trained_base_model_out
@@ -41,6 +45,7 @@
 ./results/squad/squad_trained_newsqa_triviaqa_model_out
 ./results/squad/squad_trained_mixed_triviaqa_newsqa_model_out
 ./results/squad/squad_pred_mixed_2_epochs_out
+./results/squad/squad_trained_mixed_2_epochs_out
 
 
 ./results/triviaqa/triviaqa_pred_squad_model_out
@@ -50,6 +55,7 @@
 ./results/triviaqa/triviaqa_pred_squad_trained_newsqa_triviaqa_model_out
 ./results/triviaqa/triviaqa_pred_squad_trained_mixed_triviaqa_newsqa_model_out
 ./results/triviaqa/triviaqa_pred_mixed_2_epochs_out
+./results/triviaqa/triviaqa_pred_squad_trained_mixed_2_epochs_out
 
 
 ./results/newsqa/newsqa_pred_triviaqa_model_out
@@ -59,6 +65,7 @@
 ./results/newsqa/newsqa_pred_triviaqa_trained_newsqa_squad_model_out
 ./results/newsqa/newsqa_pred_triviaqa_trained_mixed_squad_newsqa_model_out
 ./results/newsqa/newsqa_pred_mixed_2_epochs_out
+./results/newsqa/newsqa_pred_triviaqa_trained_mixed_2_epochs_out
 
 
 ./results/squad/squad_pred_triviaqa_model_out
@@ -68,6 +75,7 @@
 ./results/squad/squad_pred_triviaqa_trained_newsqa_squad_model_out
 ./results/squad/squad_pred_triviaqa_trained_mixed_squad_newsqa_model_out
 ./results/squad/squad_pred_mixed_2_epochs_out
+./results/squad/squad_pred_triviaqa_trained_mixed_2_epochs_out
 
 
 ./results/triviaqa/triviaqa_trained_base_model_out
@@ -77,3 +85,4 @@
 ./results/triviaqa/triviaqa_trained_newsqa_squad_model_out
 ./results/triviaqa/triviaqa_trained_mixed_squad_newsqa_model_out
 ./results/triviaqa/triviaqa_pred_mixed_2_epochs_out
+./results/triviaqa/triviaqa_trained_mixed_2_epochs_out
