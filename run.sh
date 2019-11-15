@@ -67,12 +67,13 @@ remove_model_data() {
   local backup_dir=${dir}_backup
   local to_save=(
   	nbest_predictions.json
-	null_odds.json
-	predictions.json
-	train.log
-	train.run_time
-	train.tf_record
-	eval.tf_record)
+  	null_odds.json
+  	predictions.json
+  	train.log
+  	train.run_time
+  	train.tf_record
+  	eval.tf_record
+  )
   mkdir $backup_dir
   for f in ${to_save[@]}; do
     fpath=$dir/$f
