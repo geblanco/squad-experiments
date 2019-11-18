@@ -16,8 +16,7 @@ THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/newsqa/${_me%.*}_out
-CHECKPOINT=`pwd`/models/mixed/mixed_triviaqa_squad_model.ckpt
-DROP_MODEL=`pwd`/models/newsqa/newsqa_mixed_triviaqa_squad_model
+CHECKPOINT=`pwd`/models/newsqa/newsqa_mixed_triviaqa_squad_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
 PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/test.json
