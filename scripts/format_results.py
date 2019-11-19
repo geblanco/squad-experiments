@@ -36,8 +36,7 @@ def pretty_print(datapoint):
 def main(data):
   pretty_data = []
   pretty_data.append(pretty_print(data['exact']))
-  pretty_data.append(pretty_print(data['HasAns_exact']))
-  pretty_data.append(pretty_print(data.get('NoAns_exact', 0.0)))
+  pretty_data.append(pretty_print(data['empty_percentage']))
   print(''.join(pretty_data))
 
 if __name__ == '__main__':
