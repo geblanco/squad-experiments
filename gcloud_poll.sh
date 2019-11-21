@@ -17,7 +17,7 @@ function stop_gcloud(){
 
 function is_gcloud_running(){
   echo "Polling instance..." >&2
-  gcloud beta compute ssh "${GCLOUD_INSTANCE}" --command 'sleep 10s; exit 0' 1>&2; &
+  gcloud beta compute ssh "${GCLOUD_INSTANCE}" --command 'sleep 10s; exit 0' >&2 &
 
   gcloud_pid=$!
   wait $gcloud_pid >/dev/null
