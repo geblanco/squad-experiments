@@ -121,4 +121,5 @@ experiments/**/data
 /converter
 predictions/*/*_data
 /plots
+gcloud.env
 
