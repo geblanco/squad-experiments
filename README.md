@@ -26,3 +26,14 @@ To get more details about the available options please see the example.experimen
 Some datasets may require some manual setup in order to work. For example [News QA](https://github.com/Maluuba/newsqa) requires manual download (due to license issues) and docker for compilation.
 
 The original BERT repository does not parallelize over GPU, to do so, you can enable [horovod](https://github.com/horovod/horovod) by setting `HOROVOD=1`, defaults to 2 GPU and can be customized inside the `run_squad.sh` script.
+
+
+# Scripts
+
+Info about some of the scripts:
+- `scripts/eval.py`: Calculates precision/recall/f1 over empty answers
+- `scripts/format_results.py`: Format the results for latex tables
+
+Example to get latex-table ready data
+
+`python scripts/eval.py squad/dev-v2.0.json results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/predictions.json --merge results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/results.json | python scripts/format_results.py --`

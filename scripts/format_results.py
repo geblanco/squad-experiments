@@ -37,6 +37,11 @@ def main(data):
   pretty_data = []
   pretty_data.append(pretty_print(data['exact']))
   pretty_data.append(pretty_print(data['empty_percentage']))
+  if data.get('NoAns_exact', None) is not None:
+    # dataset with empty answers
+    pretty_data.append(pretty_print(data['precision']))
+    pretty_data.append(pretty_print(data['recall']))
+    pretty_data.append(pretty_print(data['empty_f1']))
   print(''.join(pretty_data))
 
 if __name__ == '__main__':
