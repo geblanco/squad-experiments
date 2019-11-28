@@ -33,15 +33,28 @@ def pretty_print(datapoint):
   rounded = floor(datapoint)
   return '{}\t'.format(rounded)
 
-def main(data):
+def format_no_empty(data):
   pretty_data = []
   pretty_data.append(pretty_print(data['exact']))
-  pretty_data.append(pretty_print(data['empty_percentage']))
-  if data.get('NoAns_exact', None) is not None:
-    # dataset with empty answers
-    pretty_data.append(pretty_print(data['precision']))
-    pretty_data.append(pretty_print(data['recall']))
-    pretty_data.append(pretty_print(data['empty_f1']))
+  pretty_data.append(pretty_print(data['NoAns_percentage']))
+  return pretty_data
+
+def format_with_empty(data):
+  pretty_data = []
+  pretty_data.append(pretty_print(data['exact']))
+  pretty_data.append(pretty_print(data['HasAns_exact']))
+  pretty_data.append(pretty_print(data['NoAns_exact']))
+  pretty_data.append(pretty_print(data['NoAns_percentage']))
+  pretty_data.append(pretty_print(data['NoAns_precision']))
+  pretty_data.append(pretty_print(data['NoAns_recall']))
+  pretty_data.append(pretty_print(data['NoAns_f1']))
+  return pretty_data
+
+def main(data):
+  if data.get('NoAns_exact', None) is None:
+    pretty_data = format_no_empty(data)
+  else:
+    pretty_data = format_with_empty(data)
   print(''.join(pretty_data))
 
 if __name__ == '__main__':

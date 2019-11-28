@@ -48,13 +48,13 @@ def run_precision_recall_analysis(pred_qids, gold_qids, total_questions):
   except:
     f = 0.0
   return {
-    'precision': floor(precision*100),
-    'recall': floor(recall*100),
-    'empty_f1': floor(f*100),
-    'true_pos': true_pos,
-    'selected': len(pred_qids),
-    'relevant': len(gold_qids),
-    'empty_percentage': floor((len(pred_qids) / total_questions) * 100)
+    'NoAns_precision': floor(precision*100),
+    'NoAns_recall': floor(recall*100),
+    'NoAns_f1': floor(f*100),
+    'NoAns_true_pos': true_pos,
+    'NoAns_selected': len(pred_qids),
+    'NoAns_relevant': len(gold_qids),
+    'NoAns_percentage': floor((len(pred_qids) / total_questions) * 100)
   }
 
 def apply_threshold(preds, na_probs, na_prob_thresh, qid_list):

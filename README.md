@@ -33,7 +33,12 @@ The original BERT repository does not parallelize over GPU, to do so, you can en
 Info about some of the scripts:
 - `scripts/eval.py`: Calculates precision/recall/f1 over empty answers
 - `scripts/format_results.py`: Format the results for latex tables
+- `scripts/split_dataset.py`: Splits a SQuAD like dataset into desired sizes.
 
 Example to get latex-table ready data
 
 `python scripts/eval.py squad/dev-v2.0.json results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/predictions.json --merge results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/results.json | python scripts/format_results.py --`
+
+Split train dataset into three splits, representing 60, 20 and 20 percent of the original one.
+
+`python scripts/split_dataset.py -d squad/train-v2.0.json -s -o squad/ -p 60 20 20 --names 'train-v2.1' 'dev-v2.1' 'test-v2.1'`
