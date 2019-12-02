@@ -80,7 +80,8 @@ remove_model_data() {
     [[ -f $fpath ]] && cp $fpath $backup_dir
   done
   clean_data_dir $dir
-  mv $backup_dir $dir
+  mv $backup_dir/* $dir
+  rm -rf $backup_dir
 }
 
 # no errors accepted

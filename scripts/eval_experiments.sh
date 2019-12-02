@@ -7,6 +7,7 @@ if [[ $# -lt 1 ]]; then
   exit 0
 fi
 
+# filelist must point to the results folder directly, without trailing slash
 experiments=$(cat $1)
 
 eval_script=`pwd`/squad/evaluate-v2.0.py
