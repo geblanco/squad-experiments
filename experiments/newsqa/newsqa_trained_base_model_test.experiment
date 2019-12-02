@@ -11,12 +11,13 @@ BACKUP=0
 BATCH_SIZE=16
 SEQ_LENGTH=256
 TRAIN_EPOCHS=2
-TRAIN=False
+TRAIN=True
 THRESH=0
 
 BERT_DIR=`pwd`/models/uncased
 OUTPUT_DIR=`pwd`/experiments/newsqa/${_me%.*}_out
-CHECKPOINT=`pwd`/models/newsqa/newsqa_base_model.ckpt
+CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
+DROP_MODEL=`pwd`/models/newsqa/newsqa_base_model_test
 
 TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
 PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/test.json
