@@ -8,6 +8,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 # filelist must point to the results folder directly, without trailing slash
+# example ./results/newsqa/newsqa_pred_base_model_out
 experiments=$(cat $1)
 
 eval_script=`pwd`/squad/evaluate-v2.0.py
