@@ -18,7 +18,7 @@ source $exp
 
 cd bert
 
-if [[ ! -z $HOROVOD ]]; then
+if [[ ! -z $HOROVOD && $HOROVOD -eq 1 ]]; then
   # parallel run
   mpirun -np 2 \
      --allow-run-as-root \

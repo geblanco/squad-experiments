@@ -37,7 +37,7 @@ if [[ -z $DOCKERIZE || $DOCKERIZE -eq 0 ]]; then
 else
   { time nvidia-docker run \
     -v `pwd`:/workspace \
-    nvcr.io/nvidia/tensorflow:19.09-py3 \
+    nvcr.io/nvidia/tensorflow:19.02-py3 \
     $(fix_experiment_path $script) $(fix_experiment_path $exp) \
     2>&1 \
     | tee "${OUTPUT_DIR}/${log_prefix}.log"; \
