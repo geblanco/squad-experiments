@@ -37,7 +37,7 @@ while $(is_gcloud_running); do
   for i in $(seq $(( $POLL_INTERVAL / $POLL_MSG_INTERVAL ))); do
     sleep "${POLL_MSG_INTERVAL}m"
     min_remaining=$(( $min_remaining - $POLL_MSG_INTERVAL ))
-    echo "Polling again in ${min_remaining}"
+    echo "Polling again in ${min_remaining} minutes"
   done
 done
 
