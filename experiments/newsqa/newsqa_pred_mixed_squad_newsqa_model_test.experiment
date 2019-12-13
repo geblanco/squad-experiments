@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_me='newsqa_pred_mixed_squad_newsqa_model.experiment'
+_me='newsqa_pred_mixed_squad_newsqa_model_test.experiment'
 
 EXP_NAME='Mixed of SQuAD and NewsQA'
 META='Model trained over a mix of SQuAD and NewsQA datasets for 2 epochs'
@@ -19,4 +19,4 @@ OUTPUT_DIR=`pwd`/experiments/newsqa/${_me%.*}_out
 CHECKPOINT=`pwd`/models/mixed/mixed_squad_newsqa_model.ckpt
 
 TRAIN_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/train.json
-PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/dev.json
+PREDICT_FILE=`pwd`/experiments/newsqa/data/newsqa_squad/test.json
