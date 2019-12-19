@@ -47,7 +47,9 @@ def run_precision_recall_analysis(pred_qids, gold_qids, total_questions):
     f = (2 * precision * recall) / (precision + recall)
   except:
     f = 0.0
+  # For empty answers, exact matches with recall (how many retrieved were relevant)
   return {
+    'NoAns_exact': floor(recall*100),
     'NoAns_precision': floor(precision*100),
     'NoAns_recall': floor(recall*100),
     'NoAns_f1': floor(f*100),
