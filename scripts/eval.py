@@ -47,9 +47,7 @@ def run_precision_recall_analysis(pred_qids, gold_qids, total_questions):
     f = (2 * precision * recall) / (precision + recall)
   except:
     f = 0.0
-  # For empty answers, exact matches with recall (how many retrieved were relevant)
   return {
-    'NoAns_exact': floor(recall*100),
     'NoAns_precision': floor(precision*100),
     'NoAns_recall': floor(recall*100),
     'NoAns_f1': floor(f*100),
@@ -100,6 +98,9 @@ def main():
   eval_dict = run_precision_recall_analysis(preds_no_ans, qid_no_ans, len(qid_to_has_ans))
   if OPTS.merge is not None:
     eval_dict = merge(eval_dict, orig_results)
+  if eval_dict.get('NoAns_exact') is not None:
+    # For empty answers, exact matches with recall (how many retrieved were relevant)
+    eval_dict['NoAns_exact'] = eval_dict['NoAns_recall']
   print(json.dumps(eval_dict, indent=2))
 
 if __name__ == '__main__':
