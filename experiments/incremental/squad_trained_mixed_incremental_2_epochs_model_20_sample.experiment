@@ -1,0 +1,28 @@
+#!/bin/bash
+
+_me='squad_trained_mixed_incremental_2_epochs_model_20_sample.experiment'
+
+EXP_NAME='SQuAD +Mix 2 Epochs Model'
+META='Model trained over SQuAD on top of a mix of SQuAD, TriviaQA and NewsQA datasets for 2 epochs.'
+META+='Maintaining original proportions over train and dev sets'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+N_STEPS=5
+SAMPLE_SIZE=20
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/incremental/${_me%.*}_out
+CHECKPOINT=`pwd`/models/incremental/mixed_incremental_2_epochs_model_20_sample.ckpt
+DROP_MODEL=`pwd`/models/incremental/squad_mixed_incremental_2_epochs_model_20_sample
+
+SOURCE_DATASET_FILE=`pwd`/squad/train-v2.0.json
+TRAIN_FILE=`pwd`/squad/train-v2.0-sampled.json
+PREDICT_FILE=`pwd`/squad/dev-v2.0.json

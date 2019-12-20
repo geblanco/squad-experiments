@@ -49,7 +49,7 @@ def check_empty_percentage(qid_to_has_ans, qids, target):
   perc_no_ans = numof_no_ans / total
   check = False
   side = 0
-  # print(f'P {perc_no_ans}, T {target}, TH, {THRESHOLD}')
+  print(f'P {perc_no_ans}, T {target}, TH, {THRESHOLD}')
   if abs(perc_no_ans - target) <= THRESHOLD:
     check = True
   if perc_no_ans < target:
@@ -65,7 +65,12 @@ def remove_ans(qids, to_remove):
     return qids[amount:]
   return qids[:(amount * -1)]
 
+def remove_no_ans(qid_to_has_ans):
+  return [q for q, v in qid_to_has_ans.items() if v]
+
 def sample_dataset(qid_to_has_ans, qids, target):
+  if target == 0:
+    return remove_no_ans(qid_to_has_ans)
   check, direction = check_empty_percentage(qid_to_has_ans, qids, target)
   if check:
     return qids

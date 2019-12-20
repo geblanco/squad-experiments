@@ -1,0 +1,27 @@
+#!/bin/bash
+
+_me='squad_trained_incremental_base_model_10_sample.experiment'
+
+EXP_NAME='SQuAD-Trained'
+META='SQuAD model over bert base, maintaining original proportions over train and dev sets'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+N_STEPS=5
+SAMPLE_SIZE=10
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/incremental/${_me%.*}_out
+CHECKPOINT=`pwd`/models/uncased/bert_model.ckpt
+DROP_MODEL=`pwd`/models/incremental/squad_incremental_base_model_10_sample
+
+SOURCE_DATASET_FILE=`pwd`/squad/train-v2.0.json
+TRAIN_FILE=`pwd`/squad/train-v2.0-sampled.json
+PREDICT_FILE=`pwd`/squad/dev-v2.0.json
