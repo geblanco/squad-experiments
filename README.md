@@ -35,10 +35,23 @@ Info about some of the scripts:
 - `scripts/format_results.py`: Format the results for latex tables
 - `scripts/split_dataset.py`: Splits a SQuAD like dataset into desired sizes.
 
-Example to get latex-table ready data
-
-`python scripts/eval.py squad/dev-v2.0.json results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/predictions.json --merge results/squad/squad_pred_mixed_triviaqa_newsqa_model_out/results.json | python scripts/format_results.py --`
-
 Split train dataset into three splits, representing 60, 20 and 20 percent of the original one.
 
 `python scripts/split_dataset.py -d squad/train-v2.0.json -s -o squad/ -p 60 20 20 --names 'train-v2.1' 'dev-v2.1' 'test-v2.1'`
+
+Example to get latex-table ready data
+
+```bash
+# get results, evaluated with squad script
+./scripts/eval_experiments.sh filelist
+
+# get results for the last model in one json file (triviaqa model)
+for f in $(head -n 126 filelist | tail -n 12 | grep -v "#--"); do 
+expfile=$(echo $f | sed -e 's/\.\/results/experiments/' | sed -e 's/_out/\.experiment/')
+dataset=$(grep -Po '(?<=PREDICT_FILE=`pwd`/).*$' $expfile)
+python scripts/eval.py $dataset $f/predictions.json --merge $f/results.json
+done | python scripts/merge_json_lines.py --output /tmp/triviaqa_results.json
+
+# pretty print for latex
+python ./scripts/format_results.py /tmp/triviaqa_results.json
+```
