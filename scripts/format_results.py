@@ -1,3 +1,4 @@
+from collections import defaultdict
 from stat import S_ISFIFO
 
 import math
@@ -6,7 +7,7 @@ import json
 import sys
 
 def usage():
-  print('Usage: ./format_results.py <dataset> | -- <stdin>')
+  print('Usage: ./format_results.py <results> | -- <stdin>')
   sys.exit(0)
 
 def parse_args():
@@ -29,33 +30,68 @@ def parse_args():
 def floor(number):
   return math.floor(number * 100)/100.0
 
-def pretty_print(datapoint):
+def pretty_print(datapoint, highlith):
   rounded = floor(datapoint)
-  return '{}\t'.format(rounded)
+  if highlith:
+    return '\\textbf{' + str(rounded) + '}\t& '
+  return '{:<14}\t& '.format(rounded)
 
-def format_no_empty(data):
-  pretty_data = []
-  pretty_data.append(pretty_print(data['exact']))
-  pretty_data.append(pretty_print(data['NoAns_percentage']))
-  return pretty_data
+def extract_fields_no_empty(data):
+  fields = []
+  fields.append(data['exact'])
+  fields.append(data['NoAns_percentage'])
+  return fields
 
-def format_with_empty(data):
-  pretty_data = []
-  pretty_data.append(pretty_print(data['exact']))
-  pretty_data.append(pretty_print(data['HasAns_exact']))
-  pretty_data.append(pretty_print(data['NoAns_exact']))
-  pretty_data.append(pretty_print(data['NoAns_percentage']))
-  pretty_data.append(pretty_print(data['NoAns_precision']))
-  pretty_data.append(pretty_print(data['NoAns_recall']))
-  pretty_data.append(pretty_print(data['NoAns_f1']))
-  return pretty_data
+def extract_fields_with_empty(data):
+  fields = []
+  fields.append(data['exact'])
+  fields.append(data['HasAns_exact'])
+  fields.append(data['NoAns_exact'])
+  fields.append(data['NoAns_percentage'])
+  fields.append(data['NoAns_precision'])
+  fields.append(data['NoAns_recall'])
+  fields.append(data['NoAns_f1'])
+  return fields
 
-def main(data):
-  if data.get('NoAns_exact', None) is None:
-    pretty_data = format_no_empty(data)
+def extract_fields(row):
+  if row.get('NoAns_exact', None) is None:
+    fields = extract_fields_no_empty(row)
   else:
-    pretty_data = format_with_empty(data)
+    fields = extract_fields_with_empty(row)
+  return fields
+
+def process_row(row, highlith_indices):
+  pretty_data = []
+  for idx, value in enumerate(row):
+    pretty_value = pretty_print(value, bool(idx in highlith_indices))
+    pretty_data.append(pretty_value)
   print(''.join(pretty_data))
+
+def find_max_index(column):
+  sorted_indices = sorted(range(len(column)), reverse=True, key=column.__getitem__)
+  return sorted_indices[:2]
+
+def transpose(data):
+  return [[data[i][j] for i in range(len(data))] for j in range(len(data[0]))]
+
+def column_to_row_index(column_indices):
+  row_indices = defaultdict(list)
+  for idx, indices in enumerate(column_indices):
+    for index_value in indices:
+      row_indices[index_value].append(idx)
+  return row_indices
+
+def find_max(data):
+  trans_data = transpose(data)
+  # get the two max per column
+  max_column_indices = [find_max_index(row) for row in trans_data]
+  return column_to_row_index(max_column_indices)
+
+def main(raw_data):
+  data = [extract_fields(row) for row in raw_data]
+  row_indices = find_max(data)
+  for idx, row in enumerate(data):
+    process_row(row, row_indices[idx])
 
 if __name__ == '__main__':
   data = parse_args()

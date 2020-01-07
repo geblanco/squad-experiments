@@ -14,7 +14,9 @@ def parse_args():
                       help='Threshold to predict empty. Default to best_f1_thresh from results '
                       '(merge option) or 1.0')
   parser.add_argument('--merge', required=False, type=str, default=None,
-    help='Merge metrics with given json file')
+                      help='Merge metrics with given json file')
+  parser.add_argument('--pretty', action='store_true', help='Whether to pretty print results.')
+
   args = parser.parse_args()
   if len(sys.argv) == 1:
     parser.print_help()
@@ -101,7 +103,12 @@ def main():
   if eval_dict.get('NoAns_exact') is not None:
     # For empty answers, exact matches with recall (how many retrieved were relevant)
     eval_dict['NoAns_exact'] = eval_dict['NoAns_recall']
-  print(json.dumps(eval_dict, indent=2))
+  
+  dump_args = {}
+  if OPTS.pretty:
+    dump_args['indent'] = 2
+  
+  print(json.dumps(eval_dict, **dump_args))
 
 if __name__ == '__main__':
   OPTS = parse_args()

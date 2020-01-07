@@ -1,6 +1,8 @@
 ./results/newsqa/newsqa_pred_base_model_test_out
 ./results/newsqa/newsqa_pred_mixed_triviaqa_squad_model_test_out
 ./results/newsqa/newsqa_trained_base_model_test_out
+./results/newsqa/newsqa_pred_mixed_squad_newsqa_model_test_out
+./results/newsqa/newsqa_pred_mixed_triviaqa_newsqa_model_test_out
 ./results/newsqa/newsqa_pred_mixed_2_epochs_test_out
 ./results/newsqa/newsqa_trained_squad_model_test_out
 ./results/newsqa/newsqa_trained_triviaqa_model_test_out
