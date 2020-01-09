@@ -67,8 +67,8 @@ def process_row(row, highlith_indices):
     pretty_data.append(pretty_value)
   print(''.join(pretty_data))
 
-def find_max_index(column):
-  sorted_indices = sorted(range(len(column)), reverse=True, key=column.__getitem__)
+def find_index(column, _max=True):
+  sorted_indices = sorted(range(len(column)), reverse=_max, key=column.__getitem__)
   return sorted_indices[:2]
 
 def transpose(data):
@@ -84,7 +84,8 @@ def column_to_row_index(column_indices):
 def find_max(data):
   trans_data = transpose(data)
   # get the two max per column
-  max_column_indices = [find_max_index(row) for row in trans_data]
+  max_column_indices = [find_index(row) for i, row in
+      enumerate(trans_data)]
   return column_to_row_index(max_column_indices)
 
 def main(raw_data):

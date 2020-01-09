@@ -11,6 +11,7 @@
 ./results/newsqa/newsqa_trained_triviaqa_squad_model_out
 ./results/newsqa/newsqa_trained_squad_triviaqa_model_out
 
+
 #--
 #--
 ./results/squad/squad_pred_newsqa_model_out
@@ -23,6 +24,7 @@
 ./results/squad/squad_pred_newsqa_trained_triviaqa_model_out
 ./results/squad/squad_pred_newsqa_trained_triviaqa_squad_model_out
 ./results/squad/squad_pred_newsqa_trained_squad_triviaqa_model_out
+
 
 #--
 #--
