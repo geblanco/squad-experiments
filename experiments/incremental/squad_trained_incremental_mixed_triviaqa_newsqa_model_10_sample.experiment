@@ -1,0 +1,27 @@
+#!/bin/bash
+
+_me='squad_trained_incremental_mixed_triviaqa_newsqa_model_10_sample.experiment'
+
+EXP_NAME='SQuAD + Mixed of TriviaQA and NewsQA'
+META='Model trained over SQuAD and a mix of TriviaQA and NewsQA datasets for 2 epochs'
+
+DOCKERIZE=0
+BACKUP=0
+
+BATCH_SIZE=16
+SEQ_LENGTH=256
+TRAIN_EPOCHS=2
+TRAIN=True
+THRESH=0
+
+N_STEPS=1
+SAMPLE_SIZE=10
+
+BERT_DIR=`pwd`/models/uncased
+OUTPUT_DIR=`pwd`/experiments/incremental/${_me%.*}_out
+CHECKPOINT=`pwd`/models/mixed/mixed_triviaqa_newsqa_model.ckpt
+DROP_MODEL=`pwd`/models/incremental/squad_incremental_mixed_triviaqa_newsqa_model_10_sample
+
+SOURCE_DATASET_FILE=`pwd`/squad/train-v2.0.json
+TRAIN_FILE=`pwd`/squad/train-v2.0-sampled.json
+PREDICT_FILE=`pwd`/squad/dev-v2.0.json
