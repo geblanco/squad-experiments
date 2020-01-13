@@ -49,7 +49,7 @@ def check_empty_percentage(qid_to_has_ans, qids, target):
   perc_no_ans = numof_no_ans / total
   check = False
   side = 0
-  print(f'P {perc_no_ans}, T {target}, TH, {THRESHOLD}')
+  # print(f'P {perc_no_ans}, T {target}, TH, {THRESHOLD}')
   if abs(perc_no_ans - target) <= THRESHOLD:
     check = True
   if perc_no_ans < target:
@@ -104,7 +104,7 @@ def main(flags):
   sorted_qids, sorted_qid_to_has_ans = setup_dataset(qid_to_has_ans)
   final_qids = sample_dataset(qid_to_has_ans, sorted_qids, flags.sample)
   dataset = make_qid_to_dataset(dataset, final_qids)
-  print(f'Final number of questions {len(dataset)}')
+  # print(f'Final number of questions {len(dataset)}')
   json.dump(fp=open(flags.output, 'w'), obj={ 'data': dataset })
 
 if __name__ == '__main__':
