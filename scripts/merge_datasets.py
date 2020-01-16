@@ -2,13 +2,19 @@ import random, argparse
 import json, sys
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--datasets', action='store', dest='datasets', help='list of datasets to merge', required=True, type=str, nargs="*")
-parser.add_argument('-o', '--output', help='directory to put the merged data', required=True, type=str)
+parser.add_argument('-d', '--datasets', action='store', dest='datasets',
+    help='list of datasets to merge', required=True, type=str, nargs="*")
+parser.add_argument('-o', '--output', help='directory to put the merged data',
+    required=True, type=str)
 args = parser.parse_args()
 
 random.seed(42)
 
 print('Merging {} datasets'.format(', '.join(args.datasets)))
+if len(args.datasets) == 1:
+  from shutil import copyfile
+  copyfile(args.datasets[0], args.output)
+  sys.exit(0)
 
 output_dataset = []
 # import data
