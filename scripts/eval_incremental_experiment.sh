@@ -6,7 +6,7 @@ if [[ "$#" -lt 2 ]]; then
 fi
 
 dir=$1; shift
-dataset="/tmp/merged_dataset.json"
+dataset="/tmp/merged_dataset_${RANDOM}.json"
 echo "Merging datasets to $dataset"
 python ./scripts/merge_datasets.py -d $@ -o $dataset
 

@@ -21,13 +21,13 @@ def floor(number):
   return math.floor(number * 100)/100.0
 
 def format_row(row):
-  floored_row = [num if isinstance(num, int) else floor(num) for num in row]
+  floored_row = [floor(num) if isinstance(num, float) else str(num) for num in row]
   sep = '&' if FLAGS.latex else ''
   fmt = '{:<14}' if FLAGS.latex else '{}'
   return f'\t{sep}'.join([fmt.format(num) for num in floored_row])
 
 def extract_fields(data, fields):
-  outdata = [data[field] for field in fields]
+  outdata = [data.get(field, '-') for field in fields]
   return outdata
 
 def main():

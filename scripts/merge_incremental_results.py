@@ -1,4 +1,5 @@
 import os
+import glob
 import json
 import argparse
 
@@ -8,6 +9,8 @@ def parse_args():
   parser = argparse.ArgumentParser()
   parser.add_argument('--results', '-r', help='Results files', action='store',
       nargs='*', required=True)
+  parser.add_argument('--output', '-o', help='Where to place the merged results',
+      action='store', required=True)
   return parser.parse_args()
 
 def get_output_path(file_path):
@@ -28,11 +31,17 @@ def merge_results(results):
   output['nof_results'] = len(results)
   return output
 
+def flatten(array):
+  return [item for sublist in array for item in sublist]
+
+def expand_results_files(results_files):
+  return flatten(glob.glob(file) for file in results_files)
+
 def main():
-  results = [json.load(open(f, 'r')) for f in FLAGS.results]
+  results_files = expand_results_files(FLAGS.results)
+  results = [json.load(open(f, 'r')) for f in results_files]
   end_results = merge_results(results)
-  output_path = get_output_path(FLAGS.results[0])
-  json.dump(fp=open(output_path, 'w'), obj=end_results, indent=2)
+  json.dump(fp=open(FLAGS.output, 'w'), obj=end_results, indent=2)
 
 if __name__ == '__main__':
   FLAGS = parse_args()

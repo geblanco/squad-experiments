@@ -33,6 +33,7 @@ The original BERT repository does not parallelize over GPU, to do so, you can en
 Info about some of the scripts:
 - `scripts/eval.py`: Calculates precision/recall/f1 over empty answers
 - `scripts/format_results.py`: Format the results for latex tables
+- `scripts/extract_fields.py`: Retrieve concrete fields from various results (useful for latex table). Differs from format_results: It only extracts what you ask for, it does highlight any value
 - `scripts/split_dataset.py`: Splits a SQuAD like dataset into desired sizes.
 
 Split train dataset into three splits, representing 60, 20 and 20 percent of the original one.
@@ -54,4 +55,16 @@ done | python scripts/merge_json_lines.py --output /tmp/triviaqa_results.json
 
 # pretty print for latex
 python ./scripts/format_results.py /tmp/triviaqa_results.json
+```
+
+# Incremental experiments
+
+You can run any experiment multiple times with `incremental_train.sh` script (see experiments/incremental for experiment file examples), to evaluate it, run:
+When running incremental experiements, the dataset employed for training can be sampled (done automagically during training), to recover the original training dataset (and being able to evaluate), pass both the train and dev datasets to the evaluate script, it will compose the dataset for you.
+
+```bash
+./scripts/eval_incremental_experiment.sh results/incremental/mixed_trained_incremental_2_epochs_model_0_sample_out_averages experiments/mixed/data/mixed_squad/train.json experiments/mixed/data/mixed_squad/dev.json
+# Then merge all results
+python scripts/merge_incremental_results.py -r results/incremental/mixed_trained_incremental_2_epochs_model_0_sample_out_averages/results_*.json -o results/incremental/mixed_trained_incremental_2_epochs_model_0_sample_out_averages/results.json
+python scripts/extract_fields.py -i results/incremental/squad_trained_incremental_base_model_0_sample_out_averages/results.json results/incremental/squad_trained_incremental_base_model_10_sample_out_averages/results.json ... -f 'nof_results' 'exact_mean' 'exact_max' ...
 ```
