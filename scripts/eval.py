@@ -37,7 +37,7 @@ def make_preds_to_has_ans(preds):
     qid_to_has_ans[key] = bool(preds[key])
   return qid_to_has_ans
 
-def run_precision_recall_analysis(pred_qids, gold_qids, total_questions):
+def run_precision_recall_analysis(prefix, pred_qids, gold_qids, total_questions):
   true_pos = 0
   for qid in gold_qids:
     if qid in pred_qids:
@@ -50,13 +50,13 @@ def run_precision_recall_analysis(pred_qids, gold_qids, total_questions):
   except:
     f = 0.0
   return {
-    'NoAns_precision': floor(precision*100),
-    'NoAns_recall': floor(recall*100),
-    'NoAns_f1': floor(f*100),
-    'NoAns_true_pos': true_pos,
-    'NoAns_selected': len(pred_qids),
-    'NoAns_relevant': len(gold_qids),
-    'NoAns_percentage': floor((len(pred_qids) / total_questions) * 100)
+    prefix + '_precision': floor(precision*100),
+    prefix + '_recall': floor(recall*100),
+    prefix + '_f1': floor(f*100),
+    prefix + '_true_pos': true_pos,
+    prefix + '_selected': len(pred_qids),
+    prefix + '_relevant': len(gold_qids),
+    prefix + '_percentage': floor((len(pred_qids) / total_questions) * 100)
   }
 
 def apply_threshold(preds, na_probs, na_prob_thresh, qid_list):
@@ -97,7 +97,11 @@ def main():
   preds_to_has_ans = make_preds_to_has_ans(new_preds)
   qid_no_ans = [ key for key in qid_to_has_ans if not qid_to_has_ans[key] ]
   preds_no_ans = [ key for key in preds_to_has_ans if not preds_to_has_ans[key] ]
-  eval_dict = run_precision_recall_analysis(preds_no_ans, qid_no_ans, len(qid_to_has_ans))
+  no_ans_eval_dict = run_precision_recall_analysis('NoAns', preds_no_ans, qid_no_ans, len(qid_to_has_ans))
+  qid_has_ans = [ key for key in qid_to_has_ans if qid_to_has_ans[key] ]
+  preds_has_ans = [ key for key in preds_to_has_ans if preds_to_has_ans[key] ]
+  has_ans_eval_dict = run_precision_recall_analysis('HasAns', preds_has_ans, qid_has_ans, len(qid_to_has_ans))
+  eval_dict = merge(has_ans_eval_dict, no_ans_eval_dict)
   if OPTS.merge is not None:
     eval_dict = merge(eval_dict, orig_results)
   if eval_dict.get('NoAns_exact') is not None:
