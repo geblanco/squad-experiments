@@ -22,11 +22,7 @@ function is_gcloud_running(){
   gcloud_pid=$!
   wait $gcloud_pid >/dev/null
   gcloud_exit_code=$?
-  if [[ "${gcloud_exit_code}" -eq 0 ]]; then
-    true
-  else
-    false
-  fi
+  [[ "${gcloud_exit_code}" -eq 0 ]]
 }
 
 setup
